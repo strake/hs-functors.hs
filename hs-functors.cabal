@@ -9,11 +9,11 @@ maintainer:          m.farkasdyck@gmail.com
 -- copyright:           
 category:            Math
 build-type:          Simple
-extra-source-files:  ChangeLog.md
 cabal-version:       >=1.10
 
 library
   exposed-modules:     Data.Functor.Contravariant
+  exposed-modules:     Data.Profunctor
   -- other-modules:       
   -- other-extensions:    
   build-depends:       base >=4.9 && <4.12
