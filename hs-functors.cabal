@@ -20,5 +20,6 @@ library
                      , transformers >=0.4.2 && <0.6
   -- hs-source-dirs:      
   default-language:    Haskell2010
-  default-extensions:  StandaloneDeriving
+  default-extensions:  LambdaCase
+                     , StandaloneDeriving
                      , GeneralizedNewtypeDeriving

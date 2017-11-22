@@ -1,7 +1,10 @@
+{-# LANGUAGE MultiParamTypeClasses, FlexibleContexts #-}
+
 module Data.Profunctor where
 
 import Prelude hiding ((.), id)
 
+import Control.Applicative
 import Control.Arrow (Kleisli (..))
 import Control.Category
 import Control.Monad
@@ -21,3 +24,32 @@ instance Profunctor (->) where
 
 instance Monad m => Profunctor (Kleisli m) where
     dimap f g (Kleisli a) = Kleisli (fmap g . a . f)
+
+class Profunctor p => Strong f p where
+    strong :: p a₁ b₁ -> p a₂ b₂ -> p (f a₁ a₂) (f b₁ b₂)
+
+infixr 3 ***
+(***) :: Strong (,) p => p a₁ b₁ -> p a₂ b₂ -> p (a₁, a₂) (b₁, b₂)
+(***) = strong
+
+infixr 2 +++
+(+++) :: Strong Either p => p a₁ b₁ -> p a₂ b₂ -> p (Either a₁ a₂) (Either b₁ b₂)
+(+++) = strong
+
+instance Strong (,) (->) where strong f g (x, y) = (f x, g y)
+
+instance Monad m => Strong (,) (Kleisli m) where
+    strong (Kleisli f) (Kleisli g) = Kleisli $ \ (x, y) -> liftA2 (,) (f x) (g y)
+
+instance Strong Either (->) where
+    strong f _ (Left x)  = Left (f x)
+    strong _ g (Right y) = Right (g y)
+
+instance Monad m => Strong Either (Kleisli m) where
+    strong (Kleisli f) (Kleisli g) = Kleisli $ \ case Left  x -> Left  <$> f x
+                                                      Right y -> Right <$> g y
+
+class Profunctor p => Closed p where
+    closed :: p a b -> p (c -> a) (c -> b)
+
+instance Closed (->) where closed = (.)
