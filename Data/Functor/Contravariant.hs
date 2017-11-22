@@ -17,6 +17,7 @@ import Data.Functor.Const
 import Data.Functor.Product
 import Data.Functor.Reverse
 import Data.Functor.Sum
+import Data.Semigroup (Semigroup (..))
 import Data.Monoid (Alt (..))
 import Data.Proxy
 
@@ -56,11 +57,13 @@ instance Category Op1 where
 instance Semigroup a => Semigroup (Op1 a b) where
     Op1 f <> Op1 g = Op1 (liftA2 (<>) f g)
 
-instance Monoid a => Monoid (Op1 a b) where
+instance (Semigroup a, Monoid a) => Monoid (Op1 a b) where
     mempty = Op1 (pure mempty)
+    mappend = (<>)
 
 instance Semigroup a => Semigroup (Op2 a b) where
     Op2 f <> Op2 g = Op2 ((liftA2 . liftA2) (<>) f g)
 
-instance Monoid a => Monoid (Op2 a b) where
+instance (Semigroup a, Monoid a) => Monoid (Op2 a b) where
     mempty = Op2 ((pure . pure) mempty)
+    mappend = (<>)
