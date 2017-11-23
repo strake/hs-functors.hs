@@ -13,7 +13,9 @@ cabal-version:       >=1.10
 
 library
   exposed-modules:     Control.Comonad
+                     , Control.Comonad.Density
                      , Control.Comonad.Trans.Class
+                     , Control.Monad.Codensity
                      , Control.Monad.Morph
                      , Control.Monad.Trans.Compose
                      , Data.Bifunctor.Braided
