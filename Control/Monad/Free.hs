@@ -1,6 +1,11 @@
 module Control.Monad.Free where
 
+import Prelude hiding (map)
+
 import Control.Applicative
+import Control.Comonad
+import Control.Monad
+import Data.Cotraversable
 import Data.Functor.Classes
 
 data Free f a = Pure a | Free (f (Free f a))
@@ -45,3 +50,32 @@ instance (Eq a, Eq1 f) => Eq (Free f a) where (==) = liftEq (==)
 instance (Ord a, Ord1 f) => Ord (Free f a) where compare = liftCompare compare
 instance (Read a, Read1 f) => Read (Free f a) where readsPrec = readsPrec1
 instance (Show a, Show1 f) => Show (Free f a) where showsPrec = showsPrec1
+
+lift :: Functor f => f a -> Free f a
+lift = Free . fmap Pure
+
+map :: Functor g => (∀ a . f a -> g a) -> Free f a -> Free g a
+map _ (Pure a) = Pure a
+map f (Free t) = Free (map f <$> f t)
+
+fold :: Monad m => (∀ a . f a -> m a) -> Free f a -> m a
+fold _ (Pure a) = pure a
+fold f (Free t) = f t >>= fold f
+
+iter :: Functor f => (f a -> a) -> Free f a -> a
+iter _ (Pure a) = a
+iter f (Free t) = f (iter f <$> t)
+
+iterA :: (Functor f, Applicative p) => (f (p a) -> p a) -> Free f a -> p a
+iterA _ (Pure a) = pure a
+iterA f (Free t) = f (iterA f <$> t)
+
+unfold :: Functor f => (b -> Either a (f b)) -> b -> Free f a
+unfold f = either Pure (Free . fmap (unfold f)) . f
+
+unfoldM :: (Traversable f, Monad m) => (b -> m (Either a (f b))) -> b -> m (Free f a)
+unfoldM f = f >=> either (pure . pure) (fmap Free . traverse (unfoldM f))
+
+unfoldW :: (Cotraversable f, Comonad ɯ) => (ɯ b -> Either a (f b)) -> ɯ b -> Free f a
+unfoldW f ɯ = case f ɯ of Left a -> Pure a
+                          Right bf -> Free (unfoldW f `cotraverse` (bf <$ ɯ))

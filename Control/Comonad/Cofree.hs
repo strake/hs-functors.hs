@@ -1,10 +1,14 @@
 module Control.Comonad.Cofree where
 
+import Prelude hiding ((.), id, map)
+
 import Control.Applicative
+import Control.Category
 import Control.Comonad
 import Control.Monad
 import Data.Cotraversable
 import Data.Functor.Classes
+import Data.Profunctor
 
 data Cofree f a = Cofree a (f (Cofree f a))
   deriving (Functor, Foldable, Traversable)
@@ -39,3 +43,27 @@ instance Show1 f => Show1 (Cofree f) where
     liftShowsPrec sp sl n (Cofree a t) =
         showsBinaryWith sp (liftShowsPrec (liftShowsPrec sp sl)
                                           (liftShowList sp sl)) "Cofree" n a t
+
+raise :: Comonad ɯ => ɯ a -> Cofree ɯ a
+raise = liftA2 Cofree copure (raise <<=)
+
+lower :: Functor ɯ => Cofree ɯ a -> ɯ a
+lower (Cofree _ t) = copure <$> t
+
+coiter :: Functor f => (a -> f a) -> a -> Cofree f a
+coiter f = unfold (id &&& f)
+
+coiterW :: (Comonad ɯ, Functor f) => (ɯ a -> f (ɯ a)) -> ɯ a -> Cofree f a
+coiterW f ɯ = copure ɯ `Cofree` (coiterW f <$> f ɯ)
+
+unfold :: Functor f => (a -> (b, f a)) -> a -> Cofree f b
+unfold f = f >>> \ (b, af) -> Cofree b (unfold f <$> af)
+
+unfoldM :: (Traversable f, Monad m) => (a -> m (b, f a)) -> a -> m (Cofree f b)
+unfoldM f = f >=> \ (b, af) -> Cofree b <$> unfoldM f `traverse` af
+
+unfoldW :: (Cotraversable f, Comonad ɯ) => (ɯ a -> (b, f a)) -> ɯ a -> Cofree f b
+unfoldW f = f =>= \ ɯ -> Cofree (fst (copure ɯ)) (unfoldW f `cotraverse` (snd <$> ɯ))
+
+map :: Functor f => (∀ a . f a -> g a) -> Cofree f a -> Cofree g a
+map f (Cofree a t) = Cofree a (f (map f <$> t))
