@@ -13,6 +13,7 @@ import Control.Monad.Trans.Writer
 import Data.Functor.Compose
 import Data.Functor.Product
 import Data.Functor.Sum
+import Data.Monoid ((<>))
 
 class MFunctor t where
     mmap :: (∀ a . m a -> n a) -> t m a -> t n a

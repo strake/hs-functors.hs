@@ -5,6 +5,7 @@ import Control.Monad
 import Control.Monad.Morph
 import Control.Monad.Trans.Class
 import Data.Functor.Classes
+import Data.Semigroup (Semigroup (..))
 
 newtype ComposeT s t m a = ComposeT { getComposeT :: s (t m) a }
   deriving (Functor, Applicative, Monad, Foldable, Traversable, Alternative, MonadPlus,
