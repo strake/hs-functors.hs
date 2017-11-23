@@ -11,9 +11,6 @@ import Control.Monad.Trans.Reader
 import Control.Monad.Trans.State
 import Control.Monad.Trans.Writer
 import Data.Function (on)
-import qualified Data.Functor as Covar
-import Data.Functor.Compose
-import Data.Functor.Const
 import Data.Functor.Product
 import Data.Functor.Reverse
 import Data.Functor.Sum

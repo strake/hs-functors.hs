@@ -7,7 +7,6 @@ import Prelude hiding ((.), id)
 import Control.Applicative
 import Control.Arrow (Kleisli (..))
 import Control.Category
-import Control.Monad
 
 class Profunctor p where
     dimap :: (a -> b) -> (c -> d) -> p b c -> p a d
