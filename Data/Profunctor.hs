@@ -25,7 +25,7 @@ class Profunctor p where
 instance Profunctor (->) where
     dimap f g a = g . a . f
 
-instance Monad m => Profunctor (Kleisli m) where
+instance Functor f => Profunctor (Kleisli f) where
     dimap f g (Kleisli a) = Kleisli (fmap g . a . f)
 
 class Profunctor p => Strong f p where
@@ -41,14 +41,14 @@ infixr 2 +++
 
 instance Strong (,) (->) where strong f g (x, y) = (f x, g y)
 
-instance Monad m => Strong (,) (Kleisli m) where
+instance Applicative p => Strong (,) (Kleisli p) where
     strong (Kleisli f) (Kleisli g) = Kleisli $ \ (x, y) -> liftA2 (,) (f x) (g y)
 
 instance Strong Either (->) where
     strong f _ (Left x)  = Left (f x)
     strong _ g (Right y) = Right (g y)
 
-instance Monad m => Strong Either (Kleisli m) where
+instance Functor f => Strong Either (Kleisli f) where
     strong (Kleisli f) (Kleisli g) = Kleisli $ \ case Left  x -> Left  <$> f x
                                                       Right y -> Right <$> g y
 
