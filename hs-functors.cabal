@@ -12,8 +12,9 @@ build-type:          Simple
 cabal-version:       >=1.10
 
 library
-  exposed-modules:     Data.Functor.Contravariant
-  exposed-modules:     Data.Profunctor
+  exposed-modules:     Data.Bifunctor.Braided
+                     , Data.Functor.Contravariant
+                     , Data.Profunctor
   -- other-modules:       
   -- other-extensions:    
   build-depends:       base >=4.9 && <4.12
