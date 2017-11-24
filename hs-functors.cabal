@@ -14,6 +14,7 @@ cabal-version:       >=1.10
 library
   exposed-modules:     Control.Monad.Morph
                      , Control.Monad.Trans.Compose
+                     , Data.Bifunctor.Braided
                      , Data.Functor.Contravariant
                      , Data.Profunctor
   -- other-modules:       
