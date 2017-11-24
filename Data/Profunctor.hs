@@ -8,6 +8,7 @@ import Prelude hiding ((.), id)
 import Control.Applicative
 import Control.Arrow (Kleisli (..))
 import Control.Category
+import Control.Comonad
 import Control.Monad
 import Control.Monad.Fix
 import Data.Bifunctor.Braided
@@ -42,6 +43,9 @@ instance Profunctor (->) where
 instance Functor f => Profunctor (Kleisli f) where
     dimap f g (Kleisli a) = Kleisli (fmap g . a . f)
 
+instance Functor f => Profunctor (Cokleisli f) where
+    dimap f g (Cokleisli a) = Cokleisli (g . a . fmap f)
+
 class Profunctor p => Strong f p where
     strong :: p a₁ b₁ -> p a₂ b₂ -> p (f a₁ a₂) (f b₁ b₂)
 
@@ -74,6 +78,12 @@ instance Functor f => Strong Either (Kleisli f) where
     strong (Kleisli f) (Kleisli g) = Kleisli $ \ case Left  x -> Left  <$> f x
                                                       Right y -> Right <$> g y
 
+instance Comonad ɯ => Strong Either (Cokleisli ɯ) where
+    strong (Cokleisli f) (Cokleisli g) =
+        (\ a -> Left  . f . (a <$)) |||
+        (\ a -> Right . g . (a <$)) ^>> Cokleisli (copure <*> void)
+
+
 class Profunctor p => Costrong f p where
     costrongL :: p (f a c) (f b c) -> p a b
     costrongR :: p (f a b) (f a c) -> p b c
@@ -95,6 +105,11 @@ instance Costrong Either (->) where
 
 instance Monad m => Costrong Either (Kleisli m) where
     costrongL (Kleisli f) = let go = either pure (go <=< f . Right) in Kleisli (go <=< f . Left)
+
+instance Functor f => Costrong Either (Cokleisli f) where
+    costrongL (Cokleisli f) = Cokleisli (go . fmap Left)
+      where go ɯ = case f ɯ of Left  b -> b
+                               Right c -> go (Right c <$ ɯ)
 
 class Profunctor p => Closed p where
     closed :: p a b -> p (c -> a) (c -> b)
