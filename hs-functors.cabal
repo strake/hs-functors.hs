@@ -16,6 +16,7 @@ library
                      , Control.Comonad.Trans.Class
                      , Control.Monad.Morph
                      , Control.Monad.Trans.Compose
+                     , Data.Bifunctor.Braided
                      , Data.Functor.Contravariant
                      , Data.Profunctor
   -- other-modules:       
