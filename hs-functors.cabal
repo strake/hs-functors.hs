@@ -18,6 +18,7 @@ library
                      , Control.Monad.Free
                      , Control.Monad.Morph
                      , Control.Monad.Trans.Compose
+                     , Control.Monad.Trans.Free
                      , Data.Bifunctor.Braided
                      , Data.Cotraversable
                      , Data.Functor.Contravariant
