@@ -22,6 +22,20 @@ class Profunctor p where
     rmap :: (b -> c) -> p a b -> p a c
     rmap g = dimap id g
 
+infixr 1 ^>>, >>^, <<^, ^<<
+
+(^>>) :: Profunctor p => (a -> b) -> p b c -> p a c
+(^>>) = lmap
+
+(>>^) :: Profunctor p => p a b -> (b -> c) -> p a c
+(>>^) = flip rmap
+
+(<<^) :: Profunctor p => p b c -> (a -> b) -> p a c
+(<<^) = flip lmap
+
+(^<<) :: Profunctor p => (b -> c) -> p a b -> p a c
+(^<<) = rmap
+
 instance Profunctor (->) where
     dimap f g a = g . a . f
 
@@ -31,13 +45,21 @@ instance Functor f => Profunctor (Kleisli f) where
 class Profunctor p => Strong f p where
     strong :: p a₁ b₁ -> p a₂ b₂ -> p (f a₁ a₂) (f b₁ b₂)
 
-infixr 3 ***
+infixr 3 ***, &&&
+
 (***) :: Strong (,) p => p a₁ b₁ -> p a₂ b₂ -> p (a₁, a₂) (b₁, b₂)
 (***) = strong
 
-infixr 2 +++
+(&&&) :: Strong (,) p => p a b₁ -> p a b₂ -> p a (b₁, b₂)
+f &&& g = f *** g <<^ join (,)
+
+infixr 2 +++, |||
+
 (+++) :: Strong Either p => p a₁ b₁ -> p a₂ b₂ -> p (Either a₁ a₂) (Either b₁ b₂)
 (+++) = strong
+
+(|||) :: Strong Either p => p a₁ b -> p a₂ b -> p (Either a₁ a₂) b
+f ||| g = either id id ^<< f +++ g
 
 instance Strong (,) (->) where strong f g (x, y) = (f x, g y)
 
