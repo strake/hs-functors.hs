@@ -16,6 +16,7 @@ library
                      , Control.Comonad.Cofree
                      , Control.Comonad.Trans.Class
                      , Control.Monad.Free
+                     , Control.Monad.Free.Church
                      , Control.Monad.Morph
                      , Control.Monad.Trans.Compose
                      , Data.Bifunctor.Braided
