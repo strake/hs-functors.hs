@@ -15,9 +15,11 @@ library
   exposed-modules:     Control.Comonad
                      , Control.Comonad.Cofree
                      , Control.Comonad.Trans.Class
+                     , Control.Comonad.Trans.Cofree
                      , Control.Monad.Free
                      , Control.Monad.Morph
                      , Control.Monad.Trans.Compose
+                     , Control.Monad.Trans.Free
                      , Data.Bifunctor.Braided
                      , Data.Cotraversable
                      , Data.Functor.Contravariant
