@@ -2,7 +2,9 @@
 
 module Data.Fix where
 
+import Control.Arrow
 import Control.Comonad
+import Control.Monad
 import Data.Cotraversable
 import Data.Function (on)
 import Data.Functor.Classes
@@ -16,16 +18,22 @@ instance Read1 f => Read (Fix f) where readPrec = Fix <$> readPrec1
 instance Show1 f => Show (Fix f) where showsPrec n = showsPrec1 n . unFix
 
 mapFix :: Functor f => (∀ a . f a -> g a) -> Fix f -> Fix g
-mapFix f (Fix x) = Fix (f (mapFix f <$> x))
+mapFix f = Fix . f . fmap (mapFix f) . unFix
 
 cata :: Functor f => (f a -> a) -> Fix f -> a
-cata f (Fix x) = f (cata f <$> x)
+cata f = f . fmap (cata f) . unFix
 
 cataM :: (Traversable f, Monad m) => (f a -> m a) -> Fix f -> m a
-cataM f (Fix x) = traverse (cataM f) x >>= f
+cataM f = f <=< traverse (cataM f) <<< unFix
+
+cataW :: (Cotraversable f, Comonad ɯ) => (ɯ (f a) -> a) -> ɯ (Fix f) -> a
+cataW f = f =<= cotraverse (cataW f) <<< fmap unFix
 
 ana :: Functor f => (a -> f a) -> a -> Fix f
-ana f x = Fix (ana f <$> f x)
+ana f = Fix . fmap (ana f) . f
+
+anaM :: (Traversable f, Monad m) => (a -> m (f a)) -> a -> m (Fix f)
+anaM f = fmap Fix <<< traverse (anaM f) <=< f
 
 anaW :: (Cotraversable f, Comonad ɯ) => (ɯ a -> f a) -> ɯ a -> Fix f
-anaW f x = Fix (cotraverse (anaW f) (x =>> f))
+anaW f = Fix <<< cotraverse (anaW f) =<= f
