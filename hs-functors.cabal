@@ -18,6 +18,7 @@ library
                      , Control.Monad.Trans.Compose
                      , Data.Bifunctor.Braided
                      , Data.Cotraversable
+                     , Data.Fix
                      , Data.Functor.Contravariant
                      , Data.Profunctor
   -- other-modules:       
