@@ -8,7 +8,7 @@ import Data.Function (on)
 import Data.Functor.Classes
 import Text.Read
 
-data Fix f = Fix { unFix :: f (Fix f) }
+newtype Fix f = Fix { unFix :: f (Fix f) }
 
 instance Eq1 f => Eq (Fix f) where (==) = eq1 `on` unFix
 instance Ord1 f => Ord (Fix f) where compare = compare1 `on` unFix
