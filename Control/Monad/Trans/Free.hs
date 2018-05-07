@@ -1,57 +1,69 @@
+{-# LANGUAGE FlexibleInstances #-}
+
 module Control.Monad.Trans.Free where
 
 import Control.Applicative
+import Control.Comonad
+import Control.Comonad.Trans.Class
 import Control.Monad
 import Control.Monad.Trans.Class
+import Data.Bifunctor
+import Data.Bifoldable
+import Data.Bitraversable
+import Data.Bifunctor.Biff
 import Data.Functor.Compose
 import Data.Functor.Classes
 import Data.Functor.Identity
-import Data.Functor.Sum
+import Data.Functor.Join
 import Text.Read
 
-newtype FreeT f m a = FreeT { freeT :: m (Sum Identity (Compose f (FreeT f m)) a) }
-  deriving (Functor, Foldable, Traversable)
+newtype FreeT c f o a = FreeT { freeT :: o (Join (Biff c Identity (Compose f (FreeT c f o))) a) }
+deriving instance (Bifunctor c, Functor f, Functor o) => Functor (FreeT c f o)
+deriving instance (Bifoldable c, Foldable f, Foldable o) => Foldable (FreeT c f o)
+deriving instance (Bitraversable c, Traversable f, Traversable o) => Traversable (FreeT c f o)
+instance (Eq2 c, Eq1 f, Eq1 g, Eq a) => Eq (FreeT c f g a) where (==) = eq1
+instance (Ord2 c, Ord1 f, Ord1 g, Ord a) => Ord (FreeT c f g a) where compare = compare1
+instance (Read2 c, Read1 f, Read1 g, Read a) => Read (FreeT c f g a) where readPrec = readPrec1
+instance (Show2 c, Show1 f, Show1 g, Show a) => Show (FreeT c f g a) where showsPrec = showsPrec1
+instance (Eq2 c, Eq1 f, Eq1 g) => Eq1 (FreeT c f g) where
+    liftEq (==) (FreeT x) (FreeT y) = (liftEq . liftEq) (==) x y
+instance (Ord2 c, Ord1 f, Ord1 g) => Ord1 (FreeT c f g) where
+    liftCompare cmp (FreeT x) (FreeT y) = (liftCompare . liftCompare) cmp x y
+instance (Read2 c, Read1 f, Read1 g) => Read1 (FreeT c f g) where
+    liftReadPrec rp rpl = FreeT <$> liftReadPrec (liftReadPrec rp rpl) (liftReadListPrec rp rpl)
+instance (Show2 c, Show1 f, Show1 g) => Show1 (FreeT c f g) where
+    liftShowsPrec sp sl n = liftShowsPrec (liftShowsPrec sp sl) (liftShowList sp sl) n . freeT
 
-instance (Functor f, Monad m) => Applicative (FreeT f m) where
-    pure = FreeT . pure . InL . Identity
+type Free c f = FreeT c f Identity
+
+mapT :: (Functor o, Functor g, Bifunctor c) => (∀ a . f a -> g a) -> FreeT c f o a -> FreeT c g o a
+mapT f = FreeT . fmap (Join . Biff . bimap id (Compose . fmap (mapT f) . f . getCompose) . unBiff . unJoin) . freeT
+
+instance (Functor f, Monad m) => Applicative (FreeT Either f m) where
+    pure = FreeT . pure . Join . Biff . Left . Identity
     (<*>) = ap
 
-instance (Functor f, Monad m) => Monad (FreeT f m) where
-    FreeT x >>= f = FreeT $ x >>= \ case
-         InL (Identity a) -> freeT (f a)
-         InR (Compose yf) -> pure ((InR . Compose) ((>>= f) <$> yf))
+instance (Functor f, Monad m) => Monad (FreeT Either f m) where
+    FreeT x >>= f = FreeT $ unBiff . unJoin <$> x >>= \ case
+         Left  (Identity a) -> freeT (f a)
+         Right (Compose yf) -> (pure . Join . Biff) ((Right . Compose) ((>>= f) <$> yf))
 
-instance (Functor f, MonadPlus m) => Alternative (FreeT f m) where
+instance (Functor f, MonadPlus m) => Alternative (FreeT Either f m) where
     empty = FreeT mzero
     FreeT x <|> FreeT y = FreeT (x `mplus` y)
 
-instance (Functor f, MonadPlus m) => MonadPlus (FreeT f m) where
-    mzero = FreeT mzero
-    FreeT x `mplus` FreeT y = FreeT (x `mplus` y)
+instance (Functor f, MonadPlus m) => MonadPlus (FreeT Either f m)
 
-instance (Eq1 f, Eq1 g) => Eq1 (FreeT f g) where
-    liftEq (==) (FreeT x) (FreeT y) = (liftEq . liftEq) (==) x y
+instance MonadTrans (FreeT Either f) where lift = FreeT . fmap (Join . Biff . Left . Identity)
 
-instance (Ord1 f, Ord1 g) => Ord1 (FreeT f g) where
-    liftCompare cmp (FreeT x) (FreeT y) = (liftCompare . liftCompare) cmp x y
+liftT :: (Functor f, Monad m) => f a -> FreeT Either f m a
+liftT = FreeT . pure . Join . Biff . Right . Compose . fmap pure
 
-instance (Read1 f, Read1 g) => Read1 (FreeT f g) where
-    liftReadPrec rp rl = readUnaryWith (liftReadPrec (liftReadPrec rp rl)
-                                                     (liftReadListPrec rp rl)) "FreeT" FreeT
+instance (Functor f, Comonad ɯ) => Comonad (FreeT (,) f ɯ) where
+    copure = runIdentity . fst . unBiff . unJoin . copure . freeT
+    (<<=) f = FreeT . (=>> \ ɯ -> (Join . Biff) ((Identity . f) (FreeT ɯ), Compose $ (=>> f) <$> (getCompose . snd . unBiff . unJoin . copure) ɯ)) . freeT
 
-instance (Show1 f, Show1 g) => Show1 (FreeT f g) where
-    liftShowsPrec sp sl n =
-        showsUnaryWith (liftShowsPrec (liftShowsPrec sp sl)
-                                      (liftShowList sp sl)) "FreeT" n . freeT
+instance ComonadTrans (FreeT (,) f) where colift = fmap (runIdentity . fst . unBiff . unJoin) . freeT
 
-instance (Eq a, Eq1 f, Eq1 g) => Eq (FreeT f g a) where (==) = eq1
-instance (Ord a, Ord1 f, Ord1 g) => Ord (FreeT f g a) where compare = compare1
-instance (Read a, Read1 f, Read1 g) => Read (FreeT f g a) where readPrec = readPrec1
-instance (Show a, Show1 f, Show1 g) => Show (FreeT f g a) where showsPrec = showsPrec1
-
-instance MonadTrans (FreeT f) where lift = FreeT . fmap (InL . Identity)
-
-type Free f = FreeT f Identity
-
-raiseT :: (Functor f, Monad m) => f a -> FreeT f m a
-raiseT = FreeT . pure . InR . Compose . fmap pure
+coliftT :: (Functor f, Comonad ɯ) => FreeT (,) f ɯ a -> f a
+coliftT = fmap copure . getCompose . snd . unBiff . unJoin . copure . freeT
