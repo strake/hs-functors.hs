@@ -9,6 +9,7 @@ import Control.Monad
 import Data.Cotraversable
 import Data.Functor.Classes
 import Data.Profunctor
+import Text.Read (Read (..))
 
 data Cofree f a = Cofree a (f (Cofree f a))
   deriving (Functor, Foldable, Traversable)
@@ -43,6 +44,11 @@ instance Show1 f => Show1 (Cofree f) where
     liftShowsPrec sp sl n (Cofree a t) =
         showsBinaryWith sp (liftShowsPrec (liftShowsPrec sp sl)
                                           (liftShowList sp sl)) "Cofree" n a t
+
+instance (Eq1 f, Eq a) => Eq (Cofree f a) where (==) = eq1
+instance (Ord1 f, Ord a) => Ord (Cofree f a) where compare = compare1
+instance (Read1 f, Read a) => Read (Cofree f a) where readPrec = readPrec1
+instance (Show1 f, Show a) => Show (Cofree f a) where showsPrec = showsPrec1
 
 raise :: Comonad ɯ => ɯ a -> Cofree ɯ a
 raise = liftA2 Cofree copure (raise <<=)
