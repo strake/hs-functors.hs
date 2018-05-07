@@ -13,7 +13,9 @@ cabal-version:       >=1.10
 
 library
   exposed-modules:     Control.Comonad
+                     , Control.Comonad.Cofree
                      , Control.Comonad.Trans.Class
+                     , Control.Monad.Free
                      , Control.Monad.Morph
                      , Control.Monad.Trans.Compose
                      , Data.Bicotraversable
@@ -35,6 +37,7 @@ library
                      , UnicodeSyntax
                      , TypeOperators
                      , PolyKinds
+                     , RankNTypes
                      , StandaloneDeriving
                      , GeneralizedNewtypeDeriving
                      , DeriveFunctor, DeriveFoldable, DeriveTraversable
