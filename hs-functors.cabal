@@ -16,10 +16,14 @@ library
                      , Control.Comonad.Trans.Class
                      , Control.Monad.Morph
                      , Control.Monad.Trans.Compose
+                     , Data.Bicotraversable
+                     , Data.Bifunctor.Biff
                      , Data.Bifunctor.Braided
+                     , Data.Bifunctor.Tannen
                      , Data.Cotraversable
                      , Data.Fix
                      , Data.Functor.Contravariant
+                     , Data.Functor.Join
                      , Data.Profunctor
   -- other-modules:       
   -- other-extensions:    
@@ -29,6 +33,7 @@ library
   default-language:    Haskell2010
   default-extensions:  LambdaCase
                      , UnicodeSyntax
+                     , TypeOperators
                      , PolyKinds
                      , StandaloneDeriving
                      , GeneralizedNewtypeDeriving
