@@ -9,6 +9,7 @@ import Control.Monad
 import Data.Cotraversable
 import Data.Functor.Classes
 import Data.Profunctor
+import Data.Semigroup ((<>))
 import Text.Read (Read (..))
 
 data Cofree f a = Cofree a (f (Cofree f a))
