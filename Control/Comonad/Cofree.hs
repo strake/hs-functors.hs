@@ -25,8 +25,8 @@ instance Functor f => Comonad (Cofree f) where
     cut ɯ@(Cofree _ t) = Cofree ɯ (cut <$> t)
 
 instance Cotraversable f => Cotraversable (Cofree f) where
-    cosequence = liftA2 Cofree (fmap (\ (Cofree a _) -> a))
-                               (fmap cosequence . collect (\ (Cofree _ t) -> t))
+    cosequence = Cofree <$> fmap (\ (Cofree a _) -> a)
+                        <*> fmap cosequence . collect (\ (Cofree _ t) -> t)
 
 instance Eq1 f => Eq1 (Cofree f) where
     liftEq (==) (Cofree a s) (Cofree b t) = a == b && (liftEq . liftEq) (==) s t
