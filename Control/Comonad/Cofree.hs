@@ -7,13 +7,19 @@ import Control.Category
 import Control.Comonad
 import Control.Monad
 import Data.Cotraversable
+import Data.Filtrable
 import Data.Functor.Classes
+import Data.Functor.Identity
 import Data.Profunctor
 import Data.Semigroup ((<>))
 import Text.Read (Read (..))
 
 data Cofree f a = Cofree a (f (Cofree f a))
   deriving (Functor, Foldable, Traversable)
+
+instance Filtrable (Cofree Identity) where
+    mapMaybe f (Cofree a asf) = (case f a of Just b -> Cofree b
+                                             Nothing -> copure) $ mapMaybe f <$> asf
 
 instance Alternative f => Applicative (Cofree f) where
     pure = flip Cofree empty
