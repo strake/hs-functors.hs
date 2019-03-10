@@ -8,7 +8,6 @@ import Control.Comonad
 import Control.Monad
 import Data.Cotraversable
 import Data.Functor.Classes
-import Data.Profunctor
 import Data.Semigroup ((<>))
 import Text.Read (Read (..))
 
@@ -58,7 +57,7 @@ lower :: Functor ɯ => Cofree ɯ a -> ɯ a
 lower (Cofree _ t) = copure <$> t
 
 coiter :: Functor f => (a -> f a) -> a -> Cofree f a
-coiter f = unfold (id &&& f)
+coiter f = unfold ((,) <*> f)
 
 coiterW :: (Comonad ɯ, Functor f) => (ɯ a -> f (ɯ a)) -> ɯ a -> Cofree f a
 coiterW f ɯ = copure ɯ `Cofree` (coiterW f <$> f ɯ)
