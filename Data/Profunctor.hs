@@ -130,3 +130,57 @@ instance (Traversable f, Applicative p) => Closed f (Kleisli p) where
 
 instance (Cotraversable f, Functor ɯ) => Closed f (Cokleisli ɯ) where
     closed = Cokleisli . cotraverse . runCokleisli
+
+
+class Profunctor p => Lift f p where
+    lift :: p a b -> p (f a) (f b)
+
+instance Functor f => Lift f (->) where lift = fmap
+
+instance (Traversable f, Applicative p) => Lift f (Kleisli p) where
+    lift (Kleisli f) = Kleisli (traverse f)
+
+instance (Cotraversable f, Functor ɯ) => Lift f (Cokleisli ɯ) where
+    lift (Cokleisli f) = Cokleisli (cotraverse f)
+
+instance (Lift φ p, Functor f, Applicative g, Traversable φ, Cotraversable φ) => Lift φ (Biff p f g) where
+    lift = Biff . dimap cosequence sequenceA . lift . unBiff
+
+instance (Cotraversable m) => Lift ((->) a) (Kleisli m) where
+    lift (Kleisli afb) = Kleisli $ \ xa -> cosequence $ afb . xa
+
+instance (Functor f) => Lift ((->) a) (Cokleisli f) where
+    lift (Cokleisli f) = Cokleisli $ \ fs a -> f $ ($ a) <$> fs
+
+instance (Functor f, Cotraversable g, Lift ((->) a) p) => Lift ((->) a) (Biff p f g) where
+    lift = Biff . dimap (flip $ fmap . flip id) cosequence . lift . unBiff
+
+instance (Lift f p, Functor g) => Lift f (Tannen g p) where
+    lift = Tannen . fmap lift . unTannen
+
+
+class Profunctor p => Colift f p where
+    colift :: p (f a) (f b) -> p a b
+
+instance Colift ((,) c) (->) where
+    colift f a = let (c, b) = f (c, a) in b
+
+instance MonadFix m => Colift ((,) c) (Kleisli m) where
+    colift (Kleisli f) = Kleisli $ \ a -> snd <$> mfix (f . flip (,) a . fst)
+
+instance Functor ɯ => Colift ((,) c) (Cokleisli ɯ) where
+    colift (Cokleisli f) = Cokleisli $ \ a -> snd $ fix (f . flip fmap a . (,) . fst)
+
+instance Colift (Either c) (->) where
+    colift f = let go = either (go . f . Left) id in go . f . Right
+
+instance Monad m => Colift (Either c) (Kleisli m) where
+    colift (Kleisli f) = let go = either (go <=< f . Left) pure in Kleisli (go <=< f . Right)
+
+instance Functor f => Colift (Either c) (Cokleisli f) where
+    colift (Cokleisli f) = Cokleisli (go . fmap Right)
+      where go ɯ = case f ɯ of Left  b -> go (Left  b <$ ɯ)
+                               Right c -> c
+
+instance (Colift f p, Functor g) => Colift f (Tannen g p) where
+    colift = Tannen . fmap colift . unTannen
