@@ -11,7 +11,9 @@ import Control.Category
 import Control.Comonad
 import Control.Monad
 import Control.Monad.Fix
+import Data.Bifunctor.Biff
 import Data.Bifunctor.Braided
+import Data.Bifunctor.Tannen
 import Data.Cotraversable
 
 class Profunctor p where
@@ -46,6 +48,12 @@ instance Functor f => Profunctor (Kleisli f) where
 
 instance Functor f => Profunctor (Cokleisli f) where
     dimap f g (Cokleisli a) = Cokleisli (g . a . fmap f)
+
+instance (Profunctor p, Functor f, Functor g) => Profunctor (Biff p f g) where
+    dimap f g = Biff . dimap (fmap f) (fmap g) . unBiff
+
+instance (Functor f, Profunctor p) => Profunctor (Tannen f p) where
+    dimap f g = Tannen . fmap (dimap f g) . unTannen
 
 class Profunctor p => Strong f p where
     strong :: p a₁ b₁ -> p a₂ b₂ -> p (f a₁ a₂) (f b₁ b₂)
