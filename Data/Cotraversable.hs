@@ -28,10 +28,10 @@ class Functor f => Cotraversable f where
     collect f = cosequence . fmap f
 
     cosequence :: Functor g => g (f a) -> f (g a)
-    cosequence = collect id
+    cosequence = cotraverse id
 
     cotraverse :: Functor g => (g a -> b) -> g (f a) -> f b
-    cotraverse f = fmap f . cosequence
+    cotraverse f = fmap f . collect id
 
 instance Cotraversable Identity where
     cosequence = Identity . fmap runIdentity
