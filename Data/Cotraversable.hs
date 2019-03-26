@@ -10,7 +10,20 @@ import Data.Functor.Product
 import Data.Functor.Reverse
 import Data.Proxy
 
+-- | Laws:
+--
+-- * @'cosequence' = 'collect' 'id'@
+--
+-- * @'cosequence' . 'cosequence' = 'id'@
+--
+-- * @'collect' f = 'cosequence' . 'fmap' f@
+--
+-- * @'fmap' f = 'runIdentity' . 'collect' ('Identity' . f)@
+--
+-- * @'fmap' 'cosequence' . 'collect' f = 'getCompose' . 'collect' ('Compose' . f)@
 class Functor f => Cotraversable f where
+    {-# MINIMAL collect | cosequence | cotraverse #-}
+
     collect :: Functor g => (a -> f b) -> g a -> f (g b)
     collect f = cosequence . fmap f
 
