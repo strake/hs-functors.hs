@@ -12,7 +12,7 @@ import Data.Profunctor
 import Data.Semigroup ((<>))
 import Text.Read (Read (..))
 
-data Cofree f a = Cofree a (f (Cofree f a))
+data Cofree f a = Cofree { head :: a, tail :: f (Cofree f a) }
   deriving (Functor, Foldable, Traversable)
 
 instance Alternative f => Applicative (Cofree f) where
