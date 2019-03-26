@@ -1,5 +1,3 @@
-{-# LANGUAGE RankNTypes #-}
-
 module Control.Monad.Codensity where
 
 import Prelude hiding (fail)

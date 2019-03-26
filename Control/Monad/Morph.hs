@@ -1,5 +1,3 @@
-{-# LANGUAGE RankNTypes #-}
-
 module Control.Monad.Morph where
 
 import Control.Monad
