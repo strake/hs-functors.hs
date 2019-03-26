@@ -1,5 +1,3 @@
-{-# LANGUAGE RankNTypes #-}
-
 module Data.Fix where
 
 import Control.Arrow
