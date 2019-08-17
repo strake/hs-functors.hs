@@ -18,6 +18,12 @@ instance Show1 f => Show (Fix f) where showsPrec n = showsPrec1 n . unFix
 mapFix :: Functor f => (∀ a . f a -> g a) -> Fix f -> Fix g
 mapFix f = Fix . f . fmap (mapFix f) . unFix
 
+traverseFix :: (Traversable f, Monad m) => (∀ a . f a -> m (g a)) -> Fix f -> m (Fix g)
+traverseFix f = fmap Fix . f <=< traverse (traverseFix f) . unFix
+
+cotraverseFix :: (Cotraversable f, Comonad ɯ) => (∀ a . ɯ (f a) → g a) -> ɯ (Fix f) -> Fix g
+cotraverseFix f = Fix . f =<= cotraverse (cotraverseFix f) . fmap unFix
+
 cata :: Functor f => (f a -> a) -> Fix f -> a
 cata f = f . fmap (cata f) . unFix
 
