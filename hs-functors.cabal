@@ -28,6 +28,7 @@ library
                      , Data.Bifunctor.Tannen
                      , Data.Cotraversable
                      , Data.Fix
+                     , Data.FnList
                      , Data.Functor.Contravariant
                      , Data.Functor.Join
                      , Data.Profunctor
@@ -42,6 +43,7 @@ library
                      , TypeOperators
                      , PolyKinds
                      , RankNTypes
+                     , FlexibleContexts, FlexibleInstances
                      , StandaloneDeriving
                      , GeneralizedNewtypeDeriving
                      , DeriveFunctor, DeriveFoldable, DeriveTraversable
