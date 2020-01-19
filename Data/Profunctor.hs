@@ -55,6 +55,65 @@ instance (Profunctor p, Functor f, Functor g) => Profunctor (Biff p f g) where
 instance (Functor f, Profunctor p) => Profunctor (Tannen f p) where
     dimap f g = Tannen . fmap (dimap f g) . unTannen
 
+
+class Profunctor p => Lift f p where
+    lift :: p a b -> p (f a) (f b)
+
+instance Functor f => Lift f (->) where lift = fmap
+
+instance (Traversable f, Applicative p) => Lift f (Kleisli p) where
+    lift = Kleisli . traverse . runKleisli
+
+instance (Cotraversable f, Functor ɯ) => Lift f (Cokleisli ɯ) where
+    lift = Cokleisli . cotraverse . runCokleisli
+
+instance (Lift φ p, Functor f, Applicative g, Traversable φ, Cotraversable φ) => Lift φ (Biff p f g) where
+    lift = Biff . dimap cosequence sequenceA . lift . unBiff
+
+instance (Cotraversable m) => Lift ((->) a) (Kleisli m) where
+    lift (Kleisli afb) = Kleisli $ \ xa -> cosequence $ afb . xa
+
+instance (Functor f) => Lift ((->) a) (Cokleisli f) where
+    lift (Cokleisli f) = Cokleisli $ \ fs a -> f $ ($ a) <$> fs
+
+instance (Functor f, Cotraversable g, Lift ((->) a) p) => Lift ((->) a) (Biff p f g) where
+    lift = Biff . dimap (flip $ fmap . flip id) cosequence . lift . unBiff
+
+instance (Lift f p, Functor g) => Lift f (Tannen g p) where
+    lift = Tannen . fmap lift . unTannen
+
+instance Applicative f => Lift f Tagged where
+    lift = Tagged . pure . unTagged
+
+
+class Profunctor p => Colift f p where
+    colift :: p (f a) (f b) -> p a b
+
+instance Colift ((,) c) (->) where
+    colift f a = let (c, b) = f (c, a) in b
+
+instance MonadFix m => Colift ((,) c) (Kleisli m) where
+    colift (Kleisli f) = Kleisli $ \ a -> snd <$> mfix (f . flip (,) a . fst)
+
+instance Functor ɯ => Colift ((,) c) (Cokleisli ɯ) where
+    colift (Cokleisli f) = Cokleisli $ \ a -> snd $ fix (f . flip fmap a . (,) . fst)
+
+instance Colift (Either c) (->) where
+    colift f = let go = either (go . f . Left) id in go . f . Right
+
+instance Monad m => Colift (Either c) (Kleisli m) where
+    colift (Kleisli f) = let go = either (go <=< f . Left) pure in Kleisli (go <=< f . Right)
+
+instance Functor f => Colift (Either c) (Cokleisli f) where
+    colift (Cokleisli f) = Cokleisli (go . fmap Right)
+      where go ɯ = case f ɯ of Left  b -> go (Left  b <$ ɯ)
+                               Right c -> c
+
+instance (Colift f p, Functor g) => Colift f (Tannen g p) where
+    colift = Tannen . fmap colift . unTannen
+
+
+{-# DEPRECATED #-}
 class Profunctor p => Strong f p where
     strong :: p a₁ b₁ -> p a₂ b₂ -> p (f a₁ a₂) (f b₁ b₂)
 
@@ -93,6 +152,7 @@ instance Comonad ɯ => Strong Either (Cokleisli ɯ) where
         (\ a -> Right . g . (a <$)) ^>> Cokleisli (copure <*> void)
 
 
+{-# DEPRECATED #-}
 class Profunctor p => Costrong f p where
     costrongL :: p (f a c) (f b c) -> p a b
     costrongR :: p (f a b) (f a c) -> p b c
@@ -120,6 +180,8 @@ instance Functor f => Costrong Either (Cokleisli f) where
       where go ɯ = case f ɯ of Left  b -> b
                                Right c -> go (Right c <$ ɯ)
 
+
+{-# DEPRECATED #-}
 class Profunctor p => Closed f p where
     closed :: p a b -> p (f a) (f b)
 
