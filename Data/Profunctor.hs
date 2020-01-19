@@ -15,6 +15,7 @@ import Data.Bifunctor.Biff
 import Data.Bifunctor.Braided
 import Data.Bifunctor.Tannen
 import Data.Cotraversable
+import Data.Tagged
 
 class Profunctor p where
     dimap :: (a -> b) -> (c -> d) -> p b c -> p a d
@@ -54,6 +55,9 @@ instance (Profunctor p, Functor f, Functor g) => Profunctor (Biff p f g) where
 
 instance (Functor f, Profunctor p) => Profunctor (Tannen f p) where
     dimap f g = Tannen . fmap (dimap f g) . unTannen
+
+instance Profunctor Tagged where
+    dimap _ g = Tagged . g . unTagged
 
 
 class Profunctor p => Lift f p where
