@@ -1,6 +1,7 @@
 module Data.Functor.Contravariant where
 
 import Prelude hiding (Functor, (.), id)
+import qualified Prelude as Base
 
 import Control.Applicative
 import Control.Applicative.Backwards
@@ -64,3 +65,6 @@ instance Semigroup a => Semigroup (Op2 a b) where
 instance (Semigroup a, Monoid a) => Monoid (Op2 a b) where
     mempty = Op2 ((pure . pure) mempty)
     mappend = (<>)
+
+phantom :: (Base.Functor f, Functor f) => f a -> f b
+phantom = (() >$) . (() <$)
