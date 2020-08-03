@@ -9,7 +9,10 @@ import Control.Monad
 import Data.Cotraversable
 import Data.Functor.Classes
 import Data.Semigroup ((<>))
+import Numeric.Natural
 import Text.Read (Read (..))
+
+import Control.Monad.Free
 
 data Cofree f a = Cofree { head :: a, tail :: f (Cofree f a) }
   deriving (Functor, Foldable, Traversable)
@@ -73,3 +76,21 @@ unfoldW f = f =>= \ ɯ -> Cofree (fst (copure ɯ)) (unfoldW f `cotraverse` (snd 
 
 map :: Functor f => (∀ a . f a -> g a) -> Cofree f a -> Cofree g a
 map f (Cofree a t) = Cofree a (f (map f <$> t))
+
+fairJoin :: Monad f => Cofree f (Cofree f a) -> Cofree f a
+fairJoin = go 0
+  where
+    go :: Natural -> Cofree f (Cofree f a) -> Cofree f a
+    go k = go' k <*> go (k+1)
+
+    go' :: Natural -> Cofree f a -> Cofree f (Cofree f a) -> Cofree f a
+    go' 0 r _ = r
+    go' k r (Cofree as t) = go'' k as >>= Cofree a r
+
+    go'' :: Monad f => Natural -> Cofree f a -> f a
+    go'' 0 (Cofree a _) = pure a
+    go'' k (Cofree _ t) = t >>= go'' (k-1)
+
+(!!?) :: Cofree f a -> Natural -> Free f a
+Cofree a _ !!? 0 = Pure a
+Cofree _ t !!? k = Free $ (!!? (k-1)) <$> t
