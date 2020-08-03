@@ -1,4 +1,5 @@
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE DefaultSignatures #-}
 
 module Control.Monad.Morph where
 
@@ -16,13 +17,16 @@ import Data.Functor.Sum
 import Data.Monoid ((<>))
 
 class MFunctor t where
-    mmap :: (∀ a . m a -> n a) -> t m a -> t n a
+    mmap :: (Functor m, Functor n) => (∀ a . m a -> n a) -> t m a -> t n a
 
 class (MonadTrans t, MFunctor t) => MMonad t where
     mjoin :: Monad m => t (t m) a -> t m a
+    default mjoin :: (Functor (t m), Monad m) => t (t m) a -> t m a
     mjoin = mbind id
 
-    mbind :: Monad n => (∀ a . m a -> t n a) -> t m a -> t n a
+    mbind :: (Functor m, Monad n) => (∀ a . m a -> t n a) -> t m a -> t n a
+    default mbind :: (Functor m, Functor (t n), Monad n) =>
+                     (∀ a . m a -> t n a) -> t m a -> t n a
     mbind f = mjoin . mmap f
 
 instance Functor f => MFunctor (Compose f) where mmap f (Compose x) = Compose (f <$> x)
