@@ -2,10 +2,12 @@
 
 module Data.FnList where
 
-import Prelude hiding (zip, tail)
+import Prelude hiding (splitAt, tail, zip)
 import Control.Applicative
+import Data.Functor.Identity
 import Data.List.NonEmpty (NonEmpty (..), tail)
 import Data.Profunctor
+import Numeric.Natural
 
 data FnList a b c = Done c | More a (FnList a b (b -> c))
   deriving (Functor)
@@ -66,3 +68,25 @@ mergeBy cmp = go where
     go (More a x) (More b y) = case cmp a b of
         GT -> More b (go ((.) <$> More a x) y)
         _  -> More a (go (flip <$> x) (More b y))
+
+data Merge a b c = Merged (FnList a b c) | Merge (Merge (a, a) (b, b) c)
+
+merge' :: ((a, a) -> (a, a)) -> Merge a b c -> FnList a b c
+merge' _ (Merged z) = z
+merge' merge2 (Merge z) = let z' = merge' merge4 z in meh z'
+  where
+    merge4 :: ((a, a), (a, a)) -> ((a, a), (a, a))
+    merge4 ((a, b), (c, d)) =
+        let (a', b') = merge2 (a, b)
+            (b'', c'') = merge2 (c, d)
+            (c', d') = merge2 (c, d)
+            (a'', c'') = merge2 
+
+    meh :: FnList (a, a) (b, b) c -> FnList a b c
+    meh (Done c) = Done c
+    meh (More (a₁, a₂) z) = More a₁ (More a₂ (meh $ curry <$> z))
+
+splitAt :: Natural -> FnList a b c -> FnList a b (FnList a b c)
+splitAt _ (Done c) = Done (Done c)
+splitAt 0 (More a z) = Done (More a z)
+splitAt n (More a z) = More a (flip (fmap . flip id) <$> splitAt (n-1) z)
