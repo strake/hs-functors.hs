@@ -21,3 +21,5 @@ instance Bifunctor p => Functor (Join p) where fmap f = Join . bimap f f . unJoi
 instance Bifoldable p => Foldable (Join p) where foldMap f = bifoldMap f f . unJoin
 instance Bitraversable p => Traversable (Join p) where traverse f = fmap Join . bitraverse f f . unJoin
 instance Bicotraversable p => Cotraversable (Join p) where cotraverse f = Join . bicotraverse f f . fmap unJoin
+
+newtype Join1 p a x = Join1 { unJoin1 :: p a a x }

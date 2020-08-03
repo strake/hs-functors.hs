@@ -14,7 +14,8 @@ tested-with:         GHC ==8.4.3
                    , GHC ==8.6.4
 
 library
-  exposed-modules:     Control.Comonad
+  exposed-modules:     Control.Applicative.Free
+                     , Control.Comonad
                      , Control.Comonad.Cofree
                      , Control.Comonad.Density
                      , Control.Comonad.Trans.Class
@@ -30,8 +31,12 @@ library
                      , Data.Fix
                      , Data.FnList
                      , Data.Functor.Contravariant
+                     , Data.Functor.Day
                      , Data.Functor.Join
+                     , Data.Functor.Kan.L
+                     , Data.Functor.Kan.R
                      , Data.Profunctor
+                     , Data.Profunctor.Compose
   -- other-modules:       
   -- other-extensions:    
   build-depends:       base >=4.9 && <5
@@ -48,6 +53,7 @@ library
                      , StandaloneDeriving
                      , GeneralizedNewtypeDeriving
                      , DeriveFunctor, DeriveFoldable, DeriveTraversable
+                     , DerivingVia
   ghc-options:         -Wall -Wcompat -Wredundant-constraints -Wno-name-shadowing
                        -Wincomplete-record-updates -Wincomplete-uni-patterns
                        -Werror=incomplete-patterns

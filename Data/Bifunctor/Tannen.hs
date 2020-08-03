@@ -1,16 +1,20 @@
 module Data.Bifunctor.Tannen where
 
+import Control.Applicative
 import Data.Bifunctor
 import Data.Bifoldable
 import Data.Bitraversable
 import Data.Bicotraversable
 import Data.Cotraversable
 import Data.Functor.Classes
+import Data.Functor.Compose (Compose (..))
 import Text.Read (Read (..))
 
 newtype Tannen f s a b = Tannen { unTannen :: f (s a b) }
   deriving (Functor, Foldable)
 deriving instance (Traversable f, Traversable (s a)) => Traversable (Tannen f s a)
+deriving via Compose (g :: * -> *) (t f :: * -> *) instance (Applicative g, Applicative (t f)) => Applicative (Tannen g t f)
+deriving via Compose (g :: * -> *) (t f :: * -> *) instance (Alternative g, Applicative (t f)) => Alternative (Tannen g t f)
 instance (Eq1 f, Eq2 s, Eq a, Eq b) => Eq (Tannen f s a b) where (==) = eq2
 instance (Ord1 f, Ord2 s, Ord a, Ord b) => Ord (Tannen f s a b) where compare = compare2
 instance (Read1 f, Read2 s, Read a, Read b) => Read (Tannen f s a b) where readPrec = readPrec2
