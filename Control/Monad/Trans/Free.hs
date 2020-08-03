@@ -51,7 +51,13 @@ instance (Show a, Show1 f, Show1 g) => Show (FreeT f g a) where showsPrec = show
 
 instance MonadTrans (FreeT f) where lift = FreeT . fmap (InL . Identity)
 
-type Free f = FreeT f Identity
+instance Functor f => MFunctor (FreeT f) where
+    mmap f (FreeT x) = FreeT (mmap (mmap (mmap f)) <$> f x)
 
-raiseT :: (Functor f, Monad m) => f a -> FreeT f m a
-raiseT = FreeT . pure . InR . Compose . fmap pure
+liftT :: (Functor f, Monad m) => f a -> FreeT f m a
+liftT = FreeT . pure . InR . Compose . fmap pure
+
+mapT :: (Functor m, Functor g) => (∀ a . f a -> g a) -> FreeT f m a -> FreeT g m a
+mapT f = FreeT . fmap (mmap (Compose . fmap (mapT f) . f . getCompose)) . freeT
+
+type Free f = FreeT f Identity
