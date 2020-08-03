@@ -21,9 +21,11 @@ instance Alternative f => Applicative (Cofree f) where
 instance Alternative f => Monad (Cofree f) where
     x >>= f = join (f <$> x) where join (Cofree (Cofree a s) t) = Cofree a (s <|> join <$> t)
 
+instance Functor f => Cobind (Cofree f) where
+    cut ɯ@(Cofree _ t) = Cofree ɯ (cut <$> t)
+
 instance Functor f => Comonad (Cofree f) where
     copure (Cofree a _) = a
-    cut ɯ@(Cofree _ t) = Cofree ɯ (cut <$> t)
 
 instance Cotraversable f => Cotraversable (Cofree f) where
     cosequence = Cofree <$> fmap (\ (Cofree a _) -> a)
