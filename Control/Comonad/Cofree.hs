@@ -1,6 +1,6 @@
 module Control.Comonad.Cofree where
 
-import Prelude hiding ((.), id, map)
+import Prelude hiding ((.), map)
 
 import Control.Applicative
 import Control.Category
