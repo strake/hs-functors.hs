@@ -22,10 +22,10 @@ class Profunctor p where
     dimap f g = lmap f . rmap g
 
     lmap :: (a -> b) -> p b c -> p a c
-    lmap f = dimap f id
+    lmap = flip dimap id
 
     rmap :: (b -> c) -> p a b -> p a c
-    rmap g = dimap id g
+    rmap = dimap id
 
 infixr 1 ^>>, >>^, <<^, ^<<
 

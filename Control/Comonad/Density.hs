@@ -11,7 +11,7 @@ deriving instance Functor (Density f)
 
 instance Applicative f => Applicative (Density f) where
     pure a = Density (pure a) (pure ())
-    Density f x <*> Density g y = pure ((f x) (g y))
+    Density f x <*> Density g y = pure (f x $ g y)
 
 instance Comonad (Density f) where
     copure (Density f x) = f x
