@@ -6,6 +6,8 @@ import Control.Category.Dual (Dual (..))
 import Data.Functor.Const (Const (..))
 import Data.Tagged (Tagged (..))
 
+infixr 9 .
+
 -- | 'Category' sans 'id'
 --
 -- Laws:
