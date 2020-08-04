@@ -16,6 +16,8 @@ infixl 1 =>>
 infixr 1 <<=, =>=, =<=
 
 class Functor ɯ => Comonad ɯ where
+    {-# MINIMAL copure, (cut | (<<=)) #-}
+
     copure :: ɯ a -> a
 
     cut :: ɯ a -> ɯ (ɯ a)
