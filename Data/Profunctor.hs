@@ -3,7 +3,7 @@
 
 module Data.Profunctor where
 
-import Prelude hiding ((.), id)
+import Prelude hiding ((.), id, curry, uncurry)
 
 import Control.Applicative
 import Control.Arrow (Kleisli (..))
@@ -16,6 +16,7 @@ import Data.Bifunctor.Braided
 import Data.Bifunctor.Tannen
 import Data.Cotraversable
 import Data.Tagged
+import Data.Tuple (swap)
 
 class Profunctor p where
     dimap :: (a -> b) -> (c -> d) -> p b c -> p a d
@@ -115,6 +116,12 @@ instance Functor f => Colift (Either c) (Cokleisli f) where
 
 instance (Colift f p, Functor g) => Colift f (Tannen g p) where
     colift = Tannen . fmap colift . unTannen
+
+uncurry :: Lift ((,) b) p => p a (b -> c) -> p (a, b) c
+uncurry = dimap swap (uncurry (flip id)) . lift
+
+curry :: Lift ((->) b) p => p (a, b) c -> p a (b -> c)
+curry = lmap (,) . lift
 
 
 {-# DEPRECATED #-}

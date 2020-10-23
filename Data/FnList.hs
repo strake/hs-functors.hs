@@ -2,7 +2,7 @@
 
 module Data.FnList where
 
-import Prelude hiding (zip, tail)
+import Prelude hiding (zip, tail, curry, uncurry)
 import Control.Applicative
 import Data.List.NonEmpty (NonEmpty (..), tail)
 import Data.Profunctor
