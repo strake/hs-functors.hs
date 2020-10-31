@@ -4,6 +4,7 @@ module Data.FnList where
 
 import Prelude hiding (zip, tail)
 import Control.Applicative
+import Data.Cotraversable (Cotraversable (..))
 import Data.List.NonEmpty (NonEmpty (..), tail)
 import Data.Profunctor
 
@@ -66,3 +67,8 @@ mergeBy cmp = go where
     go (More a x) (More b y) = case cmp a b of
         GT -> More b (go ((.) <$> More a x) y)
         _  -> More a (go (flip <$> x) (More b y))
+
+sequence' :: Cotraversable f => FnList a b (f c) -> f (FnList a b c)
+sequence' = \ case
+    Done f -> Done <$> f
+    More a z -> More a <$> sequence' (cosequence <$> z)
