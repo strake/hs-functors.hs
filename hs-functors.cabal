@@ -29,6 +29,7 @@ library
                      , Data.Bifunctor.Biff
                      , Data.Bifunctor.Braided
                      , Data.Bifunctor.Tannen
+                     , Data.Bizip
                      , Data.Cotraversable
                      , Data.Fix
                      , Data.FnList
