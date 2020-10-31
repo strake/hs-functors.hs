@@ -34,6 +34,7 @@ library
                      , Data.FnList
                      , Data.Functor.Contravariant
                      , Data.Functor.Join
+                     , Data.Functor.Tracing
                      , Data.Profunctor
   -- other-modules:       
   -- other-extensions:    
