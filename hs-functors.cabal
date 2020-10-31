@@ -25,6 +25,7 @@ library
                      , Control.Monad.Trans.Compose
                      , Control.Semigroupoid
                      , Data.Bicotraversable
+                     , Data.Bifunctor.Associative
                      , Data.Bifunctor.Biff
                      , Data.Bifunctor.Braided
                      , Data.Bifunctor.Tannen
