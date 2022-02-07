@@ -36,11 +36,13 @@ library
                      , Data.Functor.Contravariant
                      , Data.Functor.Join
                      , Data.Functor.Tracing
+                     , Data.List.Infinite
                      , Data.Profunctor
   -- other-modules:       
   -- other-extensions:    
   build-depends:       base >=4.9 && <5
                      , dual >=0.1.1 && <0.2
+                     , filtrable >=0.1 && <0.2
                      , tagged >=0.8.6 && <0.9
                      , transformers >=0.5.3 && <0.6
   -- hs-source-dirs:      
