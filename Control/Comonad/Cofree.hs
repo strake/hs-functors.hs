@@ -1,6 +1,6 @@
 module Control.Comonad.Cofree where
 
-import Prelude hiding ((.), map)
+import Prelude hiding ((.), id, map, zip, zipWith)
 
 import Control.Applicative
 import Control.Category
@@ -73,3 +73,9 @@ unfoldW f = f =>= \ ɯ -> Cofree (fst (copure ɯ)) (unfoldW f `cotraverse` (snd 
 
 map :: Functor f => (∀ a . f a -> g a) -> Cofree f a -> Cofree g a
 map f (Cofree a t) = Cofree a (f (map f <$> t))
+
+zipWith :: Applicative f => (a -> b -> c) -> Cofree f a -> Cofree f b -> Cofree f c
+zipWith f (Cofree a as) (Cofree b bs) = Cofree (f a b) (zipWith f <$> as <*> bs)
+
+zip :: Applicative f => Cofree f a -> Cofree f b -> Cofree f (a, b)
+zip = zipWith (,)
