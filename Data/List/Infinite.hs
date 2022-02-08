@@ -1,8 +1,10 @@
 module Data.List.Infinite where
 
-import Prelude hiding ((!!), (++), head, tail)
+import Prelude (($), (<$>), (-), Applicative (..), Bool (..), Foldable (..), Functor (..), Monad (..), Traversable (..), flip, maybe, otherwise, seq)
+import Control.Category (Category (..))
 import Data.Filtrable (Filtrable (..))
 import Data.Foldable (toList)
+import Data.List.NonEmpty (NonEmpty (..))
 import Numeric.Natural (Natural)
 
 infixr 5 :.
@@ -44,3 +46,50 @@ unfoldr f b = case f b of (a, b') -> a :. unfoldr f b'
 at :: Functor f => Natural -> (a -> f a) -> Infinite a -> f (Infinite a)
 at 0 f (a:.as) = (:.as) <$> f a
 at n f (a:.as) = (a:.) <$> at (n-1) f as
+
+groupBy :: (a -> a -> Bool) -> Infinite a -> Infinite (NonEmpty a)
+groupBy eq (a:.as) = (a:|bs) :. groupBy eq cs
+  where (bs, cs) = span (eq a) as
+
+break, span :: (a -> Bool) -> Infinite a -> ([a], Infinite a)
+break p as@(a:.as')
+  | p a = ([], as)
+  | otherwise = let (bs, cs) = break p as' in (a:bs, cs)
+span p as@(a:.as')
+  | p a = let (bs, cs) = span p as' in (a:bs, cs)
+  | otherwise = ([], as)
+
+scanl :: (b -> a -> b) -> b -> Infinite a -> Infinite b
+scanl f z (x:.xs) = z :. scanl f (f z x) xs
+
+tails :: Infinite a -> Infinite (Infinite a)
+tails as@(_:.bs) = as:.tails bs
+
+drop :: Natural -> Infinite a -> Infinite a
+drop 0 = id
+drop n = drop (n-1) . tail
+
+dropWhile :: (a -> Bool) -> Infinite a -> Infinite a
+dropWhile f as@(a:.as')
+  | f a = dropWhile f as'
+  | otherwise = as
+
+iterate, iterate' :: (a -> a) -> a -> Infinite a
+iterate f a = a :. iterate f (f a)
+iterate' f a = let a' = f a in a' `seq` (a :. iterate' f a')
+
+zipWith :: (a -> b -> c) -> Infinite a -> Infinite b -> Infinite c
+zipWith f (a:.as) (b:.bs) = f a b :. zipWith f as bs
+
+zip :: Infinite a -> Infinite b -> Infinite (a, b)
+zip = zipWith (,)
+
+infixl 4 `zap`
+zap :: Infinite (a -> b) -> Infinite a -> Infinite b
+zap = zipWith id
+
+cycle :: NonEmpty a -> Infinite a
+cycle xs = xs' where xs' = xs ++ xs'
+
+concatMap :: Foldable f => (a -> f b) -> Infinite a -> Infinite b
+concatMap f (a:.as) = f a ++ concatMap f as
