@@ -5,6 +5,8 @@ import Data.Bifunctor
 import Data.Functor.Const
 
 class Bifunctor f => Bicotraversable f where
+    {-# MINIMAL bicosequence | bicotraverse #-}
+
     bicollect :: Functor g => (a -> f b c) -> g a -> f (g b) (g c)
     bicollect f = bicosequence . fmap f
 
