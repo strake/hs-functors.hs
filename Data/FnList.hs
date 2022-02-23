@@ -2,7 +2,7 @@
 
 module Data.FnList where
 
-import Prelude hiding (zip, tail)
+import Prelude hiding (reverse, tail, zip)
 import Control.Applicative
 import Data.List.NonEmpty (NonEmpty (..), tail)
 import Data.Profunctor
@@ -66,3 +66,13 @@ mergeBy cmp = go where
     go (More a x) (More b y) = case cmp a b of
         GT -> More b (go ((.) <$> More a x) y)
         _  -> More a (go (flip <$> x) (More b y))
+
+consEnd :: a -> FnList a b (b -> c) -> FnList a b c
+consEnd a = \ case
+    Done c -> More a (Done c)
+    More b l -> More b (consEnd a l)
+
+reverse :: FnList a b c -> FnList a b c
+reverse = \ case
+    Done c -> Done c
+    More a l -> consEnd a (reverse l)
