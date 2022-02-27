@@ -65,7 +65,8 @@ instance Comonad ɯ => Comonad (IdentityT ɯ) where
     cut (IdentityT x) = IdentityT (IdentityT <$> cut x)
 
 newtype Cokleisli ɯ a b = Cokleisli { runCokleisli :: ɯ a -> b }
-    deriving (Functor, Applicative, Monad)
+  deriving stock (Functor)
+  deriving (Applicative, Monad) via ((->) (ɯ a))
 
 instance Comonad ɯ => Category (Cokleisli ɯ) where
     id = Cokleisli copure

@@ -19,6 +19,7 @@ import Data.Function (on)
 import Data.Functor.Product
 import Data.Functor.Reverse
 import Data.Functor.Sum
+import Data.Kind (Type)
 import Data.Semigroup (Semigroup (..))
 import Data.Monoid (Alt (..))
 import Data.Profunctor (Profunctor (..))
@@ -44,9 +45,9 @@ instance (Functor f, Functor g) => Functor (Product f g) where
 instance (Functor f, Functor g) => Functor (Sum f g) where
     gmap f (InL x) = InL (f >$< x)
     gmap f (InR y) = InR (f >$< y)
-deriving instance Functor f => Functor (Reverse f)
-deriving instance Functor f => Functor (Backwards f)
-deriving instance Functor f => Functor (Alt f)
+deriving via (f :: Type -> Type) instance Functor f => Functor (Reverse f)
+deriving via (f :: Type -> Type) instance Functor f => Functor (Backwards f)
+deriving via (f :: Type -> Type) instance Functor f => Functor (Alt f)
 instance Functor f => Functor (ExceptT e f) where gmap f = ExceptT . gmap (fmap f) . runExceptT
 instance Functor f => Functor (MaybeT    f) where gmap f = MaybeT  . gmap (fmap f) . runMaybeT
 instance Functor f => Functor (ReaderT r f) where gmap f = ReaderT . fmap (gmap f) . runReaderT

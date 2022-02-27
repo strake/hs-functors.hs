@@ -50,13 +50,14 @@ library
   default-extensions:  LambdaCase
                      , EmptyCase
                      , UnicodeSyntax
+                     , Safe
                      , TypeOperators
                      , PolyKinds
                      , RankNTypes
                      , FlexibleContexts, FlexibleInstances
                      , StandaloneDeriving
-                     , GeneralizedNewtypeDeriving
                      , DeriveFunctor, DeriveFoldable, DeriveTraversable
+                     , DerivingVia
   ghc-options:         -Wall -Wcompat -Wredundant-constraints -Wno-name-shadowing
                        -Wincomplete-record-updates -Wincomplete-uni-patterns
                        -Werror=incomplete-patterns

@@ -9,9 +9,9 @@ import qualified Data.Functor.Contravariant as Contravar
 import Data.Semigroup (Semigroup (..))
 
 newtype ComposeT s t m a = ComposeT { getComposeT :: s (t m) a }
-  deriving (Functor, Applicative, Monad, Foldable, Traversable, Alternative, MonadPlus,
-            Eq, Ord, Bounded, Read, Show, Semigroup, Monoid, Eq1, Ord1, Read1, Show1,
-            Contravar.Functor)
+  deriving stock (Foldable, Functor, Traversable)
+  deriving (Applicative, Monad, Alternative, MonadPlus, Eq1, Ord1, Read1, Show1, Contravar.Functor) via s (t m)
+  deriving (Eq, Ord, Bounded, Read, Show, Semigroup, Monoid) via s (t m) a
 
 instance (MFunctor s, MonadTrans s, MonadTrans t) => MonadTrans (ComposeT s t) where
     lift = ComposeT . mmap lift . lift
