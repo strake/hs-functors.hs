@@ -2,7 +2,8 @@ module Data.List.Infinite where
 
 import Prelude (($), (<$>), (-), Applicative (..), Bool (..), Foldable (..), Functor (..), Monad (..), Traversable (..), flip, maybe, otherwise, seq)
 import Control.Category (Category (..))
-import Data.Filtrable (Filtrable (..))
+import Data.Bifunctor (first)
+import Data.Filtrable (Filtrable (mapMaybe))
 import Data.Foldable (toList)
 import Data.List.NonEmpty (NonEmpty (..))
 import Numeric.Natural (Natural)
@@ -73,6 +74,10 @@ dropWhile :: (a -> Bool) -> Infinite a -> Infinite a
 dropWhile f as@(a:.as')
   | f a = dropWhile f as'
   | otherwise = as
+
+splitAt :: Natural -> Infinite a -> ([a], Infinite a)
+splitAt 0 as = ([], as)
+splitAt n (a:.as) = first (a:) (splitAt (n-1) as)
 
 iterate, iterate' :: (a -> a) -> a -> Infinite a
 iterate f a = a :. iterate f (f a)
