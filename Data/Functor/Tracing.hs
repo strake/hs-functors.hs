@@ -1,5 +1,6 @@
 module Data.Functor.Tracing where
 
+import Data.Functor.Compose (Compose (..))
 import Data.Functor.Identity (Identity (..))
 import Data.Tagged (Tagged (..))
 
@@ -16,3 +17,6 @@ instance Tracing ((,) c) where
 
 instance Tracing (Either c) where
     trace f = go . Right where go = either (go . Left) id . f
+
+instance (Tracing f, Tracing g) => Tracing (Compose f g) where
+    trace = trace . trace . \ f -> getCompose . f . Compose
