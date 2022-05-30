@@ -9,6 +9,7 @@ import Data.Functor.Identity
 import Data.Functor.Product
 import Data.Functor.Reverse
 import Data.Proxy
+import Data.Tagged (Tagged (..))
 
 -- | Laws:
 --
@@ -41,6 +42,9 @@ instance Cotraversable ((->) r) where
 
 instance Cotraversable Proxy where
     cosequence _ = Proxy
+
+instance Cotraversable (Tagged t) where
+    cosequence = Tagged . fmap unTagged
 
 instance Cotraversable f => Cotraversable (IdentityT f) where
     cosequence = IdentityT . collect runIdentityT

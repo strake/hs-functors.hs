@@ -11,6 +11,7 @@ import Data.Functor.Identity
 import Data.List.NonEmpty
 import Data.Semigroup (Arg (..), Semigroup (..))
 import Data.Monoid (Monoid (..))
+import Data.Tagged (Tagged (..))
 
 infixl 1 =>>
 infixr 1 <<=, =>=, =<=
@@ -37,6 +38,8 @@ f =>= g = g . (<<=) f
 
 wfix :: Comonad ɯ => (ɯ a -> a) -> ɯ a
 wfix f = fix (fmap f . cut)
+
+deriving via Identity instance Comonad (Tagged t)
 
 instance Comonad Identity where
     copure = runIdentity

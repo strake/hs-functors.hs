@@ -2,6 +2,7 @@ module Data.Bifunctor.Associative where
 
 import Control.Arrow ((|||))
 import Data.Bifunctor (Bifunctor (..))
+import Data.Tagged (Tagged (..))
 
 class Bifunctor p => Associative p where
     assoc :: p (p a b) c -> p a (p b c)
@@ -14,3 +15,7 @@ instance Associative (,) where
 instance Associative Either where
     assoc = (Left ||| Right . Left) ||| Right . Right
     disassoc = Left . Left ||| (Left . Right ||| Right)
+
+instance Associative Tagged where
+    assoc (Tagged c) = Tagged (Tagged c)
+    disassoc (Tagged (Tagged c)) = Tagged c

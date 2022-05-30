@@ -3,6 +3,7 @@ module Data.Bicotraversable where
 import Control.Arrow
 import Data.Bifunctor
 import Data.Functor.Const
+import Data.Tagged (Tagged (..))
 
 class Bifunctor f => Bicotraversable f where
     {-# MINIMAL bicosequence | bicotraverse #-}
@@ -21,3 +22,6 @@ instance Bicotraversable (,) where
 
 instance Bicotraversable Const where
     bicotraverse f _ = Const . f . fmap getConst
+
+instance Bicotraversable Tagged where
+    bicotraverse _ g = Tagged . g . fmap unTagged
