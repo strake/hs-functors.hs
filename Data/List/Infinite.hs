@@ -1,10 +1,11 @@
 module Data.List.Infinite where
 
-import Prelude (($), (<$>), (-), Applicative (..), Bool (..), Foldable (..), Functor (..), Monad (..), Traversable (..), flip, maybe, otherwise, seq)
+import Prelude (($), (<$>), (-), Applicative (..), Bool (..), Foldable, Functor (..), Monad (..), Traversable (..), flip, maybe, otherwise, seq)
 import Control.Category (Category (..))
 import Data.Bifunctor (first)
 import Data.Filtrable (Filtrable (mapMaybe))
 import Data.Foldable (toList)
+import qualified Data.Foldable as F
 import Data.List.NonEmpty (NonEmpty (..))
 import Numeric.Natural (Natural)
 
@@ -26,7 +27,7 @@ instance Monad Infinite where
 
 infixr 5 ++
 (++) :: Foldable f => f a -> Infinite a -> Infinite a
-(++) = flip (foldr (:.))
+(++) = flip (F.foldr (:.))
 
 infixl 4 ≤*>, <*≥
 (<*≥) :: Foldable f => Infinite (a -> b) -> f a -> Infinite b
@@ -98,3 +99,6 @@ cycle xs = xs' where xs' = xs ++ xs'
 
 concatMap :: Foldable f => (a -> f b) -> Infinite a -> Infinite b
 concatMap f (a:.as) = f a ++ concatMap f as
+
+foldr :: (a -> b -> b) -> Infinite a -> b
+foldr f (a:.as) = f a (foldr f as)
