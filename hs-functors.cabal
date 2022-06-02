@@ -1,5 +1,5 @@
 name:                hs-functors
-version:             0.2.0.1
+version:             0.2.0.2
 synopsis:            Functors from products of Haskell and its dual to Haskell
 -- description:         
 license:             BSD3
