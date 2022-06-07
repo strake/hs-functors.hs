@@ -50,7 +50,6 @@ library
   default-extensions:  LambdaCase
                      , EmptyCase
                      , UnicodeSyntax
-                     , Safe
                      , TypeOperators
                      , PolyKinds
                      , RankNTypes
