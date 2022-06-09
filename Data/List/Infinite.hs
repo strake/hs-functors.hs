@@ -1,4 +1,10 @@
-module Data.List.Infinite where
+module Data.List.Infinite
+  ( Infinite (..)
+  , (++), (<*≥), (≤*>), zap, zip, zipWith
+  , (!!), at
+  , break, span, splitAt, drop, dropWhile, groupBy
+  , concatMap, foldr, unfoldr, iterate, iterate', cycle, scanl, tails
+  ) where
 
 import Prelude (($), (<$>), (-), Applicative (..), Bool (..), Foldable, Functor (..), Monad (..), Traversable (..), flip, maybe, otherwise, seq)
 import Control.Category (Category (..))
