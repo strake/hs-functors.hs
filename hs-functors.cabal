@@ -15,6 +15,7 @@ tested-with:         GHC ==8.6.5
                    , GHC ==8.10.1
 
 library
+  hs-source-dirs: .
   exposed-modules:     Control.Comonad
                      , Control.Comonad.Cofree
                      , Control.Comonad.Density
@@ -38,7 +39,8 @@ library
                      , Data.Functor.Tracing
                      , Data.List.Infinite
                      , Data.Profunctor
-  -- other-modules:       
+  other-modules:
+    Util.Magic
   -- other-extensions:    
   build-depends:       base >=4.9 && <5
                      , dual >=0.1.1 && <0.2
@@ -64,3 +66,8 @@ library
                        -Werror=incomplete-record-updates
                        -Werror=missing-fields
                        -Werror=missing-methods
+
+  if impl (ghc >= 8.0)
+    hs-source-dirs: src-ghc-8.0+
+  else
+    hs-source-dirs: src¬ghc-8.0+

@@ -1,12 +1,15 @@
+{-# LANGUAGE BlockArguments #-}
+{-# OPTIONS_GHC -fstatic-argument-transformation #-}
+
 module Data.List.Infinite
-  ( Infinite (..)
+  ( Infinite (..), head, tail
   , (++), (<*≥), (≤*>), zap, zip, zipWith
   , (!!), at
   , break, span, spanJust, splitAt, drop, dropWhile, groupBy
   , concatMap, foldr, unfoldr, iterate, iterate', cycle, scanl, tails
   ) where
 
-import Prelude (($), (<$>), (-), Applicative (..), Bool (..), Foldable, Functor (..), Monad (..), Traversable (..), flip, maybe, otherwise, seq)
+import Prelude (($), (<$>), (-), Applicative (..), Bool (..), Foldable, Functor (..), Maybe (..), Monad (..), Traversable (..), flip, maybe, otherwise, seq)
 import Control.Category (Category (..))
 import Control.Comonad (Comonad (..))
 import Data.Bifunctor (first)
@@ -16,10 +19,23 @@ import qualified Data.Foldable as F
 import Data.List.NonEmpty (NonEmpty (..))
 import Data.Maybe (Maybe (..))
 import Numeric.Natural (Natural)
+import Util.Magic
 
 infixr 5 :.
-data Infinite a = (:.) { head :: a, tail :: Infinite a }
+data Infinite a = a :. Infinite a
   deriving (Foldable, Functor, Traversable)
+
+head :: Infinite a -> a
+head (a:._) = a
+{-# NOINLINE [1] head #-}
+
+tail :: Infinite a -> Infinite a
+tail (_:.as) = as
+{-# NOINLINE [1] tail #-}
+
+{-# RULES
+"head/build" ∀ (g :: ∀ b . (a -> b -> b) -> b) . head (build g) = g (\ x _ -> x)
+#-}
 
 instance Filtrable Infinite where
     mapMaybe f (a:.as) = maybe id (:.) (f a) (mapMaybe f as)
@@ -51,7 +67,8 @@ fs ≤*> a:.as = fmap ($ a) (toList fs) ++ (fs ≤*> as)
 {-# SPECIALIZE (≤*>) :: [a -> b] -> Infinite a -> Infinite b #-}
 
 unfoldr :: (b -> (a, b)) -> b -> Infinite a
-unfoldr f b = case f b of (a, b') -> a :. unfoldr f b'
+unfoldr f b = build \ c -> let go b = case f b of (a, b') -> a `c` go b' in go b
+{-# INLINE unfoldr #-}
 
 (!!) :: Infinite a -> Natural -> a
 (a:._) !! 0 = a
@@ -75,6 +92,16 @@ span p as@(a:.as')
 
 scanl :: (b -> a -> b) -> b -> Infinite a -> Infinite b
 scanl f z (x:.xs) = z :. scanl f (f z x) xs
+{-# NOINLINE [1] scanl #-}
+
+{-# RULES
+"scanl" [~1] ∀ f a bs . scanl f a bs = build \ c -> a `c` foldr (scanlFB f c) bs a
+"scanlList" [1] ∀ f (a :: a) bs . foldr (scanlFB f (:.)) bs a = tail (scanl f a bs)
+#-}
+
+scanlFB :: (b -> a -> b) -> (b -> c -> c) -> a -> (b -> c) -> b -> c
+scanlFB f c = \ b g -> oneShot \ x -> let b' = f x b in b' `c` g b'
+{-# INLINE [0] scanlFB #-}
 
 tails :: Infinite a -> Infinite (Infinite a)
 tails as@(_:.bs) = as:.tails bs
@@ -96,6 +123,25 @@ iterate, iterate' :: (a -> a) -> a -> Infinite a
 iterate f a = a :. iterate f (f a)
 iterate' f a = let a' = f a in a' `seq` (a :. iterate' f a')
 
+{-# NOINLINE [1] iterate #-}
+{-# NOINLINE [1] iterate' #-}
+
+{-# RULES
+"iterate" [~1] ∀ f a . iterate f a = build (\ c -> iterateFB c f a)
+"iterate'" [~1] ∀ f a . iterate' f a = build (\ c -> iterateFB' c f a)
+"iterateFB" [1] iterateFB (:.) = iterate
+"iterateFB'" [1] iterateFB' (:.) = iterate'
+#-}
+
+iterateFB, iterateFB' :: (a -> b -> b) -> (a -> a) -> a -> b
+iterateFB c f x₀ = go x₀
+  where go x = x `c` go (f x)
+iterateFB' c f x₀ = go x₀
+  where go x = x' `seq` (x `c` go x') where x' = f x
+
+{-# INLINE [0] iterateFB #-}
+{-# INLINE [0] iterateFB' #-}
+
 zipWith :: (a -> b -> c) -> Infinite a -> Infinite b -> Infinite c
 zipWith f (a:.as) (b:.bs) = f a b :. zipWith f as bs
 
@@ -111,6 +157,9 @@ cycle xs = xs' where xs' = xs ++ xs'
 
 concatMap :: Foldable f => (a -> f b) -> Infinite a -> Infinite b
 concatMap f (a:.as) = f a ++ concatMap f as
+{-# NOINLINE [1] concatMap #-}
+
+{-# RULES "concatMap" ∀ f as . concatMap f as = build \ c -> foldr (\ x b -> F.foldr c b (f x)) as #-}
 
 spanJust :: (a -> Maybe b) -> Infinite a -> ([b], Infinite a)
 spanJust f as@(a:.as')
@@ -119,3 +168,25 @@ spanJust f as@(a:.as')
 
 foldr :: (a -> b -> b) -> Infinite a -> b
 foldr f (a:.as) = f a (foldr f as)
+{-# INLINE [0] foldr #-}
+
+build :: (∀ b . (a -> b -> b) -> b) -> Infinite a
+build g = g (:.)
+{-# INLINE [1] build #-}
+
+{-# RULES
+"foldr/build" ∀ f (g :: ∀ b . (a -> b -> b) -> b) . foldr f (build g) = g f
+"foldr/id" foldr (:.) = id
+
+"foldr/cons/build" ∀ f a (g :: ∀ b . (a -> b -> b) -> b) . foldr f (a:.build g) = f a (g f)
+#-}
+
+{-# RULES
+"map" [~1] ∀ f as . fmap f as = build \ c -> foldr (mapFB c f) as
+"mapFB" ∀ c f g . mapFB (mapFB c f) g = mapFB c (f . g)
+"mapFB/id" ∀ c . mapFB c (\ x -> x) = c
+#-}
+
+mapFB :: (b -> c -> c) -> (a -> b) -> a -> c -> c
+mapFB c f = \ x ys -> c (f x) ys
+{-# INLINE [0] mapFB #-}
