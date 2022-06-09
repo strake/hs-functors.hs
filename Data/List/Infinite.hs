@@ -8,6 +8,7 @@ module Data.List.Infinite
 
 import Prelude (($), (<$>), (-), Applicative (..), Bool (..), Foldable, Functor (..), Monad (..), Traversable (..), flip, maybe, otherwise, seq)
 import Control.Category (Category (..))
+import Control.Comonad (Comonad (..))
 import Data.Bifunctor (first)
 import Data.Filtrable (Filtrable (mapMaybe))
 import Data.Foldable (toList)
@@ -31,6 +32,10 @@ instance Monad Infinite where
     x >>= f = join (f <$> x)
       where
         join (a:.as) = head a :. join (tail <$> as)
+
+instance Comonad Infinite where
+    copure = head
+    cut = tails
 
 infixr 5 ++
 (++) :: Foldable f => f a -> Infinite a -> Infinite a
