@@ -1,12 +1,20 @@
-module Data.List.Infinite where
+module Data.List.Infinite
+  ( Infinite (..)
+  , (++), (<*≥), (≤*>), zap, zip, zipWith
+  , (!!), at
+  , break, span, spanJust, splitAt, drop, dropWhile, groupBy
+  , concatMap, foldr, unfoldr, iterate, iterate', cycle, scanl, tails
+  ) where
 
 import Prelude (($), (<$>), (-), Applicative (..), Bool (..), Foldable, Functor (..), Monad (..), Traversable (..), flip, maybe, otherwise, seq)
 import Control.Category (Category (..))
+import Control.Comonad (Comonad (..))
 import Data.Bifunctor (first)
 import Data.Filtrable (Filtrable (mapMaybe))
 import Data.Foldable (toList)
 import qualified Data.Foldable as F
 import Data.List.NonEmpty (NonEmpty (..))
+import Data.Maybe (Maybe (..))
 import Numeric.Natural (Natural)
 
 infixr 5 :.
@@ -24,6 +32,10 @@ instance Monad Infinite where
     x >>= f = join (f <$> x)
       where
         join (a:.as) = head a :. join (tail <$> as)
+
+instance Comonad Infinite where
+    copure = head
+    cut = tails
 
 infixr 5 ++
 (++) :: Foldable f => f a -> Infinite a -> Infinite a
@@ -99,6 +111,11 @@ cycle xs = xs' where xs' = xs ++ xs'
 
 concatMap :: Foldable f => (a -> f b) -> Infinite a -> Infinite b
 concatMap f (a:.as) = f a ++ concatMap f as
+
+spanJust :: (a -> Maybe b) -> Infinite a -> ([b], Infinite a)
+spanJust f as@(a:.as')
+  | Just b <- f a = case spanJust f as' of (bs, cs) -> (b:bs, cs)
+  | otherwise = ([], as)
 
 foldr :: (a -> b -> b) -> Infinite a -> b
 foldr f (a:.as) = f a (foldr f as)
