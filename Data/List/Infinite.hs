@@ -2,7 +2,7 @@ module Data.List.Infinite
   ( Infinite (..)
   , (++), (<*≥), (≤*>), zap, zip, zipWith
   , (!!), at
-  , break, span, splitAt, drop, dropWhile, groupBy
+  , break, span, spanJust, splitAt, drop, dropWhile, groupBy
   , concatMap, foldr, unfoldr, iterate, iterate', cycle, scanl, tails
   ) where
 
@@ -13,6 +13,7 @@ import Data.Filtrable (Filtrable (mapMaybe))
 import Data.Foldable (toList)
 import qualified Data.Foldable as F
 import Data.List.NonEmpty (NonEmpty (..))
+import Data.Maybe (Maybe (..))
 import Numeric.Natural (Natural)
 
 infixr 5 :.
@@ -105,6 +106,11 @@ cycle xs = xs' where xs' = xs ++ xs'
 
 concatMap :: Foldable f => (a -> f b) -> Infinite a -> Infinite b
 concatMap f (a:.as) = f a ++ concatMap f as
+
+spanJust :: (a -> Maybe b) -> Infinite a -> ([b], Infinite a)
+spanJust f as@(a:.as')
+  | Just b <- f a = case spanJust f as' of (bs, cs) -> (b:bs, cs)
+  | otherwise = ([], as)
 
 foldr :: (a -> b -> b) -> Infinite a -> b
 foldr f (a:.as) = f a (foldr f as)
