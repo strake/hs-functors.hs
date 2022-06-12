@@ -16,7 +16,8 @@ tested-with:         GHC ==8.6.5
 
 library
   hs-source-dirs: .
-  exposed-modules:     Control.Comonad
+  exposed-modules:     Control.Biapplicative
+                     , Control.Comonad
                      , Control.Comonad.Cofree
                      , Control.Comonad.Density
                      , Control.Comonad.Trans.Class

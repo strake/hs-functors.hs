@@ -1,5 +1,6 @@
 module Data.Bifunctor.Biff where
 
+import Control.Biapplicative
 import Data.Bifunctor
 import Data.Bifoldable
 import Data.Bitraversable
@@ -32,3 +33,7 @@ instance (Bitraversable s, Traversable f, Traversable g) => Bitraversable (Biff 
     bitraverse f g = fmap Biff . bitraverse (traverse f) (traverse g) . unBiff
 instance (Bicotraversable s, Cotraversable f, Cotraversable g) => Bicotraversable (Biff s f g) where
     bicotraverse f g = Biff . bicotraverse (cotraverse f) (cotraverse g) . fmap unBiff
+instance (Biapplicable s, Applicative f, Applicative g) => Biapplicable (Biff s f g) where
+    Biff f ≪*≫ Biff x = Biff (bimap (<*>) (<*>) f ≪*≫ x)
+instance (Bipointed s, Applicative f, Applicative g) => Bipointed (Biff s f g) where
+    bipure a b = Biff (bipure (pure a) (pure b))

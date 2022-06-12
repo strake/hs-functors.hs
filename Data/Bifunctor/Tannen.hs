@@ -1,5 +1,6 @@
 module Data.Bifunctor.Tannen where
 
+import Control.Biapplicative
 import Data.Bifunctor
 import Data.Bifoldable
 import Data.Bitraversable
@@ -27,3 +28,7 @@ instance (Traversable f, Bitraversable s) => Bitraversable (Tannen f s) where
     bitraverse f g = fmap Tannen . traverse (bitraverse f g) . unTannen
 instance (Cotraversable f, Bicotraversable s) => Bicotraversable (Tannen f s) where
     bicotraverse f g = Tannen . cotraverse (bicotraverse f g) . fmap unTannen
+instance (Applicative f, Biapplicable s) => Biapplicable (Tannen f s) where
+    Tannen f ≪*≫ Tannen x = Tannen ((≪*≫) <$> f <*> x)
+instance (Applicative f, Bipointed s) => Bipointed (Tannen f s) where
+    bipure a b = Tannen (pure (bipure a b))
