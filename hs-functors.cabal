@@ -30,6 +30,7 @@ library
                      , Data.Bifunctor.Associative
                      , Data.Bifunctor.Biff
                      , Data.Bifunctor.Braided
+                     , Data.Bifunctor.Product
                      , Data.Bifunctor.Tannen
                      , Data.Bizip
                      , Data.Cotraversable
