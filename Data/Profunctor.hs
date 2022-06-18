@@ -1,4 +1,4 @@
-{-# LANGUAGE MultiParamTypeClasses, FlexibleContexts #-}
+{-# LANGUAGE MultiParamTypeClasses, FlexibleContexts, FlexibleInstances #-}
 {-# LANGUAGE DefaultSignatures #-}
 
 module Data.Profunctor where
@@ -12,6 +12,7 @@ import Control.Comonad
 import Control.Monad
 import Control.Monad.Fix
 import Data.Bifunctor.Braided
+import Data.Cotraversable
 
 class Profunctor p where
     dimap :: (a -> b) -> (c -> d) -> p b c -> p a d
@@ -111,7 +112,13 @@ instance Functor f => Costrong Either (Cokleisli f) where
       where go ɯ = case f ɯ of Left  b -> b
                                Right c -> go (Right c <$ ɯ)
 
-class Profunctor p => Closed p where
-    closed :: p a b -> p (c -> a) (c -> b)
+class Profunctor p => Closed f p where
+    closed :: p a b -> p (f a) (f b)
 
-instance Closed (->) where closed = (.)
+instance Functor f => Closed f (->) where closed = fmap
+
+instance (Traversable f, Applicative p) => Closed f (Kleisli p) where
+    closed = Kleisli . traverse . runKleisli
+
+instance (Cotraversable f, Functor ɯ) => Closed f (Cokleisli ɯ) where
+    closed = Cokleisli . cotraverse . runCokleisli

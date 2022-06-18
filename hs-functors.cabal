@@ -1,5 +1,5 @@
 name:                hs-functors
-version:             0.1.0.0
+version:             0.1.1.0
 synopsis:            Functors from products of Haskell and its dual to Haskell
 -- description:         
 license:             BSD3
@@ -19,18 +19,24 @@ library
                      , Control.Monad.Morph
                      , Control.Monad.Trans.Compose
                      , Control.Monad.Trans.Free
+                     , Data.Bicotraversable
+                     , Data.Bifunctor.Biff
                      , Data.Bifunctor.Braided
+                     , Data.Bifunctor.Tannen
                      , Data.Cotraversable
+                     , Data.Fix
                      , Data.Functor.Contravariant
+                     , Data.Functor.Join
                      , Data.Profunctor
   -- other-modules:       
   -- other-extensions:    
-  build-depends:       base >=4.9 && <4.12
+  build-depends:       base >=4.9 && <5
                      , transformers >=0.4.2 && <0.6
   -- hs-source-dirs:      
   default-language:    Haskell2010
   default-extensions:  LambdaCase
                      , UnicodeSyntax
+                     , TypeOperators
                      , PolyKinds
                      , RankNTypes
                      , StandaloneDeriving
