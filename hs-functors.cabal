@@ -23,6 +23,7 @@ library
                      , Control.Comonad.Trans.Class
                      , Control.Monad.Codensity
                      , Control.Monad.Free
+                     , Control.Monad.Free.Church
                      , Control.Monad.Morph
                      , Control.Monad.Trans.Compose
                      , Control.Monad.Trans.Free
