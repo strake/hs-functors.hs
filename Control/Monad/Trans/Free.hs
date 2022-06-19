@@ -6,6 +6,7 @@ import Control.Applicative
 import Control.Comonad
 import Control.Comonad.Trans.Class
 import Control.Monad
+import Control.Monad.Morph
 import Control.Monad.Trans.Class
 import Data.Bifunctor
 import Data.Bifoldable
@@ -35,6 +36,12 @@ instance (Show2 c, Show1 f, Show1 g) => Show1 (FreeT c f g) where
     liftShowsPrec sp sl n = liftShowsPrec (liftShowsPrec sp sl) (liftShowList sp sl) n . freeT
 
 type Free c f = FreeT c f Identity
+
+instance (Bifunctor c, Functor f) => MFunctorPre (FreeT c f) where
+    mmapPre f = FreeT . fmap (Join . Biff . bimap id (mmap (mmapPre f)) . unBiff . unJoin) . f . freeT
+
+instance (Bifunctor c, Functor f) => MFunctorPost (FreeT c f) where
+    mmapPost f = FreeT . f . fmap (Join . Biff . bimap id (mmap (mmapPost f)) . unBiff . unJoin) . freeT
 
 mapT :: (Functor o, Functor g, Bifunctor c) => (∀ a . f a -> g a) -> FreeT c f o a -> FreeT c g o a
 mapT f = FreeT . fmap (Join . Biff . bimap id (Compose . fmap (mapT f) . f . getCompose) . unBiff . unJoin) . freeT
