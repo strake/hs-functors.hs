@@ -17,8 +17,20 @@ import Data.Functor.Product
 import Data.Functor.Sum
 import Data.Monoid ((<>))
 
-class MFunctor t where
+class (MFunctorPre t, MFunctorPost t) => MFunctor t where
     mmap :: (∀ a . m a -> n a) -> t m a -> t n a
+
+class MFunctorPre t where
+    mmapPre :: Functor n => (∀ a . m a -> n a) -> t m a -> t n a
+
+class MFunctorPost t where
+    mmapPost :: Functor m => (∀ a . m a -> n a) -> t m a -> t n a
+
+instance {-# OVERLAPPABLE #-} MFunctor t => MFunctorPre t where
+    mmapPre = mmap
+
+instance {-# OVERLAPPABLE #-} MFunctor t => MFunctorPost t where
+    mmapPost = mmap
 
 class MFunctor t => MSemimonad t where
     mjoin :: Functor m => t (t m) a -> t m a

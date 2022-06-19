@@ -25,6 +25,7 @@ library
                      , Control.Monad.Free
                      , Control.Monad.Morph
                      , Control.Monad.Trans.Compose
+                     , Control.Monad.Trans.Free
                      , Control.Semigroupoid
                      , Data.Bicotraversable
                      , Data.Bifunctor.Associative
