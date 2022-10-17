@@ -1,3 +1,5 @@
+{-# LANGUAGE QuantifiedConstraints #-}
+
 module Data.Bifunctor.Product where
 
 import Control.Biapplicative (Biapplicable (..), Bipointed (..))
@@ -6,6 +8,15 @@ import Data.Bifunctor (Bifunctor (..))
 import Data.Bitraversable (Bitraversable (..))
 
 data Product f g a b = Pair { fst :: f a b, snd :: g a b }
+
+instance (forall a. Foldable (f a), forall a. Foldable (g a)) => Foldable (Product f g a) where
+    foldMap f (Pair x y) = foldMap f x <> foldMap f y
+
+instance (forall a. Functor (f a), forall a. Functor (g a)) => Functor (Product f g a) where
+    fmap f (Pair x y) = Pair (fmap f x) (fmap f y)
+
+instance (forall a. Traversable (f a), forall a. Traversable (g a)) => Traversable (Product f g a) where
+    traverse f (Pair x y) = Pair <$> traverse f x <*> traverse f y
 
 instance (Bifoldable f, Bifoldable g) => Bifoldable (Product f g) where
     bifoldMap f g (Pair x y) = bifoldMap f g x <> bifoldMap f g y
