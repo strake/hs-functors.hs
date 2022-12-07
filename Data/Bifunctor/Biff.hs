@@ -17,6 +17,14 @@ instance (Eq2 s, Eq1 f, Eq1 g, Eq a, Eq b) => Eq (Biff s f g a b) where (==) = e
 instance (Ord2 s, Ord1 f, Ord1 g, Ord a, Ord b) => Ord (Biff s f g a b) where compare = compare2
 instance (Read2 s, Read1 f, Read1 g, Read a, Read b) => Read (Biff s f g a b) where readPrec = readPrec2
 instance (Show2 s, Show1 f, Show1 g, Show a, Show b) => Show (Biff s f g a b) where showsPrec = showsPrec2
+instance (Eq2 s, Eq1 f, Eq1 g, Eq a) => Eq1 (Biff s f g a) where
+    liftEq f (Biff x) (Biff y) = liftEq (liftEq f) x y
+instance (Ord2 s, Ord1 f, Ord1 g, Ord a) => Ord1 (Biff s f g a) where
+    liftCompare f (Biff x) (Biff y) = liftCompare (liftCompare f) x y
+instance (Read2 s, Read1 f, Read1 g, Read a) => Read1 (Biff s f g a) where
+    liftReadPrec f fs = Biff <$> liftReadPrec (liftReadPrec f fs) (liftReadListPrec f fs)
+instance (Show2 s, Show1 f, Show1 g, Show a) => Show1 (Biff s f g a) where
+    liftShowsPrec f fs n = liftShowsPrec (liftShowsPrec f fs) (liftShowList f fs) n . unBiff
 instance (Eq2 s, Eq1 f, Eq1 g) => Eq2 (Biff s f g) where
     liftEq2 f g (Biff x) (Biff y) = liftEq2 (liftEq f) (liftEq g) x y
 instance (Ord2 s, Ord1 f, Ord1 g) => Ord2 (Biff s f g) where

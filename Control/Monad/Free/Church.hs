@@ -23,6 +23,12 @@ instance Functor f => Applicative (Free f) where
 instance Functor f => Monad (Free f) where
     Free x >>= f = x f wrap
 
+instance (Eq a, Eq1 f) => Eq (Free f a) where
+    (==) = eq1
+
+instance (Ord a, Ord1 f) => Ord (Free f a) where
+    compare = compare1
+
 instance Eq1 f => Eq1 (Free f) where
     liftEq (==) x y = liftEq (==) (fromChurch x) (fromChurch y)
 

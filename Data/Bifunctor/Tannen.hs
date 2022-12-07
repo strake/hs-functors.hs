@@ -16,6 +16,10 @@ instance (Eq1 f, Eq2 s, Eq a, Eq b) => Eq (Tannen f s a b) where (==) = eq2
 instance (Ord1 f, Ord2 s, Ord a, Ord b) => Ord (Tannen f s a b) where compare = compare2
 instance (Read1 f, Read2 s, Read a, Read b) => Read (Tannen f s a b) where readPrec = readPrec2
 instance (Show1 f, Show2 s, Show a, Show b) => Show (Tannen f s a b) where showsPrec = showsPrec2
+instance (Eq1 f, Eq2 s, Eq a) => Eq1 (Tannen f s a) where liftEq f (Tannen x) (Tannen y) = liftEq (liftEq f) x y
+instance (Ord1 f, Ord2 s, Ord a) => Ord1 (Tannen f s a) where liftCompare f (Tannen x) (Tannen y) = liftCompare (liftCompare f) x y
+instance (Read1 f, Read2 s, Read a) => Read1 (Tannen f s a) where liftReadPrec rp rlp = Tannen <$> liftReadPrec (liftReadPrec rp rlp) (liftReadListPrec rp rlp)
+instance (Show1 f, Show2 s, Show a) => Show1 (Tannen f s a) where liftShowsPrec sp sl n = liftShowsPrec (liftShowsPrec sp sl) (liftShowList sp sl) n . unTannen
 instance (Eq1 f, Eq2 s) => Eq2 (Tannen f s) where liftEq2 f g (Tannen x) (Tannen y) = liftEq (liftEq2 f g) x y
 instance (Ord1 f, Ord2 s) => Ord2 (Tannen f s) where liftCompare2 f g (Tannen x) (Tannen y) = liftCompare (liftCompare2 f g) x y
 instance (Read1 f, Read2 s) => Read2 (Tannen f s) where liftReadPrec2 rpa rlpa rpb rlpb = Tannen <$> liftReadPrec (liftReadPrec2 rpa rlpa rpb rlpb) (liftReadListPrec2 rpa rlpa rpb rlpb)
